@@ -1,0 +1,70 @@
+object ProcessListForm: TProcessListForm
+  Left = 511
+  Top = 339
+  Width = 425
+  Height = 137
+  BorderIcons = []
+  Caption = #38468#21152#21040#36827#31243
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -12
+  Font.Name = 'Segoe UI'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poOwnerFormCenter
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  PixelsPerInch = 96
+  TextHeight = 15
+  object MainLabel: TLabel
+    Left = 16
+    Top = 12
+    Width = 87
+    Height = 15
+    Caption = #38468#21152#21040#19979#21015#36827#31243':'
+  end
+  object OKBtn: TBitBtn
+    Left = 246
+    Top = 64
+    Width = 75
+    Height = 25
+    Caption = #30830#23450'(&O)'
+    Default = True
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = #24494#36719#38597#40657
+    Font.Style = []
+    ModalResult = 1
+    ParentFont = False
+    TabOrder = 0
+    NumGlyphs = 2
+  end
+  object CancelBtn: TBitBtn
+    Left = 326
+    Top = 64
+    Width = 75
+    Height = 25
+    Cancel = True
+    Caption = #21462#28040'(&C)'
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = #24494#36719#38597#40657
+    Font.Style = []
+    ModalResult = 2
+    ParentFont = False
+    TabOrder = 1
+    NumGlyphs = 2
+  end
+  object ProcessCombo: TComboBox
+    Left = 16
+    Top = 32
+    Width = 385
+    Height = 23
+    Style = csDropDownList
+    ItemHeight = 15
+    TabOrder = 2
+  end
+end
