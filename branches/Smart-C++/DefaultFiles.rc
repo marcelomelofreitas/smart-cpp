@@ -1,0 +1,152 @@
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "..\devcpp.exe.manifest"
+
+English lng ..\lang\English.lng
+
+/* default order of highlighter component
+   may be good idea to make more concrete
+(fore, back, bold, italic, under)
+1 assembler
+2 character
+3 comment
+4 float
+5 hex
+6 identifier
+7 illegal char
+8 number
+9 octal
+10 preprocess
+11 key word
+12 whitespace
+13 string
+14 symbol
+15 <selection color>
+16 <right margin>
+17 Breakpoint
+18 Error Line
+19 Active Breakpoint
+20 Gutter
+21 Selected Text
+22 Fold bar lines (fg only)
+*/
+STRINGTABLE
+{
+/* ª≥æ…æ≠µ‰ */
+ 1, "clBlue, clNone, 0, 0, 0"
+ 2, "clBlack, clNone, 0, 0, 0"
+ 3, "clHighlight, clNone, 0, 1, 0"
+ 4, "clPurple, clNone, 0, 0, 0"
+ 5, "clPurple, clNone, 0, 0, 0"
+ 6, "clBlack, clNone, 0, 0, 0"
+ 7, "clBlack, clNone, 0, 0, 0"
+ 8, "clPurple, clNone, 0, 0, 0"
+ 9, "clPurple, clNone, 0, 0, 0"
+ 10, "clGreen, clNone, 0, 0, 0"
+ 11, "clBlack, clNone, 1, 0, 0"
+ 12, "clBlack, clWhite, 0, 0, 0"
+ 13, "clBlue, clNone, 1, 0, 0"
+ 14, "clRed, clNone, 1, 0, 0"
+ 15, "clHighlight, clWhite, 0, 0, 0"
+ 16, "clWhite, clMaroon, 0, 0, 0"
+ 17, "clWhite, clRed"
+ 18, "clWhite, clMaroon"
+ 19, "clWhite, clBlue"
+ 20, "clBlack, clBtnFace"
+ 21, "clWhite, clNavy"
+ 22, "clBlack, clBtnFace"
+
+/* …ÓÂ‰“πÕÌ */
+ 1001, "$00FFAB79, $001E1E1E, 0, 0, 0"
+ 1002, "$005252D2, clNone, 0, 0, 0"
+ 1003, "$000CDDC7, $001E1E1E, 0, 0, 0"
+ 1004, "$0047B37F, $001E1E1E, 0, 0, 0"
+ 1005, "$0047B37F, $001E1E1E, 0, 0, 0"
+ 1006, "$00FFD6BE, clNone, 0, 0, 0"
+ 1007, "$000000FB, clNone, 0, 0, 0"
+ 1008, "$0047B37F, $001E1E1E, 0, 0, 0"
+ 1009, "$0047B37F, $001E1E1E, 0, 0, 0"
+ 1010, "$00FFAB79, $001E1E1E, 1, 0, 0"
+ 1011, "clWhite, $001E1E1E, 1, 0, 0"
+ 1012, "$00D8D8D8, $001E1E1E, 0, 0, 0"
+ 1013, "$0000C6FF, $001E1E1E, 1, 0, 0"
+ 1014, "$0077E5D9, $001E1E1E, 0, 0, 0"
+ 1015, "clHighlight, clWhite, 0, 0, 0"
+ 1016, "clWhite, clMaroon, 0, 0, 0"
+ 1017, "16777215, 32896"
+ 1018, "16777215, 5581567"
+ 1019, "16777215, 13421619"
+ 1020, "13684944, 1973790"
+ 1021, "13684944, 0"
+ 1022, "39423, 5328448"
+
+/* Notepad++ */
+ 2001, "clBlue, clNone, 0, 0, 0"
+ 2002, "clBlack, clNone, 0, 0, 0"
+ 2003, "clGreen, clNone, 0, 1, 0"
+ 2004, "clPurple, clNone, 0, 0, 0"
+ 2005, "clPurple, clNone, 0, 0, 0"
+ 2006, "clBlack, clNone, 0, 0, 0"
+ 2007, "clGray, clNone, 0, 0, 0"
+ 2008, "$000080FF, clNone, 0, 0, 0"
+ 2009, "clPurple, clNone, 0, 0, 0"
+ 2010, "$00004080, clNone, 0, 0, 0"
+ 2011, "clBlue, clNone, 1, 0, 0"
+ 2012, "clBlack, clWhite, 0, 0, 0"
+ 2013, "clGray, clNone, 1, 0, 0"
+ 2014, "clRed, clNone, 1, 0, 0"
+ 2015, "clHighlight, clWhite, 0, 0, 0"
+ 2016, "clNavy, clMaroon, 0, 0, 0"
+ 2017, "clWhite, clRed"
+ 2018, "clWhite, clMaroon"
+ 2019, "clWhite, clBlue"
+ 2020, "clBlack, clBtnFace"
+ 2021, "clWhite, clSilver"
+ 2022, "clRed, clBtnFace"
+
+/* Visual Studio */
+ 3001, "clBlack, clNone, 0, 0, 0"
+ 3002, "clBlack, clNone, 0, 0, 0"
+ 3003, "clGreen, clNone, 0, 0, 0"
+ 3004, "clBlack, clNone, 0, 0, 0"
+ 3005, "clBlack, clNone, 0, 0, 0"
+ 3006, "clBlack, clNone, 0, 0, 0"
+ 3007, "clRed, clNone, 0, 0, 0"
+ 3008, "clBlack, clNone, 0, 0, 0"
+ 3009, "clBlack, clNone, 0, 0, 0"
+ 3010, "clBlue, clNone, 0, 0, 0"
+ 3011, "clBlue, clNone, 0, 0, 0"
+ 3012, "clNone, clWhite, 0, 0, 0"
+ 3013, "clBlack, clNone, 0, 0, 0"
+ 3014, "clBlack, clNone, 0, 0, 0"
+ 3015, "clGreen, clNone, 0, 0, 0"
+ 3016, "clRed, clNone, 0, 0, 0"
+ 3017, "clWhite, clRed"
+ 3018, "clRed, clNone"
+ 3019, "clWhite, clBlue"
+ 3020, "$00AF912B, clWhite"
+ 3021, "clWhite, clNavy"
+ 3022, "clNone, clBtnFace"
+
+/* Borland */
+ 4001, "clLime, clNone, 0, 0, 0"
+ 4002, "clYellow, clNone, 0, 0, 0"
+ 4003, "clSilver, clNone, 0, 0, 0"
+ 4004, "clYellow, clNone, 0, 0, 0"
+ 4005, "clYellow, clNone, 0, 0, 0"
+ 4006, "clYellow, clNone, 0, 0, 0"
+ 4007, "clYellow, clNone, 0, 0, 0"
+ 4008, "clYellow, clNone, 0, 0, 0"
+ 4009, "clYellow, clNone, 0, 0, 0"
+ 4010, "clYellow, clNone, 0, 0, 0"
+ 4011, "clWhite, clNone, 0, 0, 0"
+ 4012, "clYellow, clNavy, 0, 0, 0"
+ 4013, "clYellow, clNone, 0, 0, 0"
+ 4014, "clYellow, clNone, 0, 0, 0"
+ 4015, "clWhite, clRed, 0, 0, 0"
+ 4016, "clWhite, clMaroon, 0, 0, 0"
+ 4017, "clWhite, clRed"
+ 4018, "clWhite, clMaroon"
+ 4019, "clBlack, clAqua"
+ 4020, "clYellow, clNavy"
+ 4021, "clBlack, clSilver"
+ 4022, "clYellow, clBtnFace"
+}

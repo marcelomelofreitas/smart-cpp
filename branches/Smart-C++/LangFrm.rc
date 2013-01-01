@@ -1,0 +1,4 @@
+CLASSIC BITMAP ".\images\examples\Classic.bmp"
+NIGHT BITMAP ".\images\examples\Night.bmp"
+NPP BITMAP ".\images\examples\Notepad++.bmp"
+VS BITMAP ".\images\examples\VisualStudio.bmp"
