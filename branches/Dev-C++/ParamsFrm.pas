@@ -22,70 +22,70 @@ unit ParamsFrm;
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons;
+    {$IFDEF WIN32}
+    Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+    Dialogs, StdCtrls, Buttons;
 {$ENDIF}
 {$IFDEF LINUX}
-  SysUtils, Variants, Classes, QGraphics, QControls, QForms,
-  QDialogs, QStdCtrls, QButtons;
+SysUtils, Variants, Classes, QGraphics, QControls, QForms,
+QDialogs, QStdCtrls, QButtons;
 {$ENDIF}
 
 type
-  TParamsForm = class(TForm)
-    grpParameters: TGroupBox;
-    ParamEdit: TEdit;
-    grpHost: TGroupBox;
-    HostEdit: TEdit;
-    LoadBtn: TSpeedButton;
-    OpenDialog: TOpenDialog;
-    OkBtn: TBitBtn;
-    CancelBtn: TBitBtn;
-    procedure LoadBtnClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
-  private
-    procedure LoadText;
-    { Private declarations }
-  public
-    procedure DisableHost;
-    { Public declarations }
-  end;
+    TParamsForm = class(TForm)
+        grpParameters: TGroupBox;
+        ParamEdit: TEdit;
+        grpHost: TGroupBox;
+        HostEdit: TEdit;
+        LoadBtn: TSpeedButton;
+        OpenDialog: TOpenDialog;
+        OkBtn: TBitBtn;
+        CancelBtn: TBitBtn;
+        procedure LoadBtnClick(Sender: TObject);
+        procedure FormCreate(Sender: TObject);
+    private
+        procedure LoadText;
+        { Private declarations }
+    public
+        procedure DisableHost;
+        { Public declarations }
+    end;
 
 implementation
 
 uses
-  MultiLangSupport, devcfg;
+    MultiLangSupport, devcfg;
 
 {$R *.dfm}
 
 procedure TParamsForm.LoadText;
 begin
-	// Set interface font
-	Font.Name := devData.InterfaceFont;
-	Font.Size := devData.InterfaceFontSize;
+    // Set interface font
+    Font.Name := devData.InterfaceFont;
+    Font.Size := devData.InterfaceFontSize;
 
-  Caption := Lang[ID_PARAM_CAPTION];
-  grpParameters.Caption := Lang[ID_PARAM_PARAMS];
-  grpHost.Caption := Lang[ID_PARAM_HOST];
-  OkBtn.Caption := Lang[ID_BTN_OK];
-  CancelBtn.Caption := Lang[ID_BTN_CANCEL];
+    Caption := Lang[ID_PARAM_CAPTION];
+    grpParameters.Caption := Lang[ID_PARAM_PARAMS];
+    grpHost.Caption := Lang[ID_PARAM_HOST];
+    OkBtn.Caption := Lang[ID_BTN_OK];
+    CancelBtn.Caption := Lang[ID_BTN_CANCEL];
 end;
 
 procedure TParamsForm.LoadBtnClick(Sender: TObject);
 begin
-  if OpenDialog.Execute then
-    HostEdit.Text := OpenDialog.FileName;
+    if OpenDialog.Execute then
+        HostEdit.Text := OpenDialog.FileName;
 end;
 
 procedure TParamsForm.DisableHost;
 begin
-	HostEdit.Enabled := false;
-	LoadBtn.Enabled := false;
+    HostEdit.Enabled := false;
+    LoadBtn.Enabled := false;
 end;
 
 procedure TParamsForm.FormCreate(Sender: TObject);
 begin
-	LoadText;
+    LoadText;
 end;
 
 end.

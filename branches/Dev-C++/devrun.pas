@@ -22,47 +22,47 @@ unit devrun;
 interface
 
 uses
-{$IFDEF WIN32}
-  Classes, Windows, Dialogs, utils;
+    {$IFDEF WIN32}
+    Classes, Windows, Dialogs, utils;
 {$ENDIF}
 {$IFDEF LINUX}
-  Classes, QDialogs, utils;
+Classes, QDialogs, utils;
 {$ENDIF}
 
 type
-  TLineOutputEvent = procedure(Sender: TObject; const Line: AnsiString) of Object;
+    TLineOutputEvent = procedure(Sender: TObject; const Line: AnsiString) of object;
 
-  TDevRun = class(TThread)
-  private
-    TheMsg     : AnsiString;
-    CurrentLine: AnsiString;
-    FLineOutput: TLineOutputEvent;
-    fCheckAbort: TCheckAbortFunc;
-  protected
-    procedure CallLineOutputEvent;
-    procedure Execute; override;
-    procedure LineOutput(const Line: AnsiString);
-    procedure ShowError(const Msg: AnsiString);
-    procedure ShowMsg;
-  public
-    Command   : AnsiString;
-    Directory : AnsiString;
-    Output    : AnsiString;
-    property OnLineOutput: TLineOutputEvent read FLineOutput write FLineOutput;
-    property OnCheckAbort: TCheckAbortFunc read FCheckAbort write FCheckAbort;
-  end;
+    TDevRun = class(TThread)
+    private
+        TheMsg: AnsiString;
+        CurrentLine: AnsiString;
+        FLineOutput: TLineOutputEvent;
+        fCheckAbort: TCheckAbortFunc;
+    protected
+        procedure CallLineOutputEvent;
+        procedure Execute; override;
+        procedure LineOutput(const Line: AnsiString);
+        procedure ShowError(const Msg: AnsiString);
+        procedure ShowMsg;
+    public
+        Command: AnsiString;
+        Directory: AnsiString;
+        Output: AnsiString;
+        property OnLineOutput: TLineOutputEvent read FLineOutput write FLineOutput;
+        property OnCheckAbort: TCheckAbortFunc read FCheckAbort write FCheckAbort;
+    end;
 
 implementation
 
 procedure TDevRun.ShowMsg;
 begin
-  MsgBox(TheMsg);
+    MsgBox(TheMsg);
 end;
 
 procedure TDevRun.ShowError(const Msg: AnsiString);
 begin
-  TheMsg := Msg;
-  Synchronize(ShowMsg);
+    TheMsg := Msg;
+    Synchronize(ShowMsg);
 end;
 
 procedure TDevRun.CallLineOutputEvent;
@@ -72,15 +72,14 @@ end;
 
 procedure TDevRun.LineOutput(const Line: AnsiString);
 begin
-  CurrentLine := Line;
-  if Assigned(FLineOutput) then
-      Synchronize(CallLineOutputEvent);
+    CurrentLine := Line;
+    if Assigned(FLineOutput) then
+        Synchronize(CallLineOutputEvent);
 end;
 
 procedure TDevRun.Execute;
 begin
-  Output := RunAndGetOutput(Command, Directory, Self.ShowError, LineOutput, FCheckAbort);
+    Output := RunAndGetOutput(Command, Directory, Self.ShowError, LineOutput, FCheckAbort);
 end;
 
 end.
-

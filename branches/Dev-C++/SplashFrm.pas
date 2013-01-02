@@ -22,47 +22,47 @@ unit SplashFrm;
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, ComCtrls, Version;
+    {$IFDEF WIN32}
+    Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+    ExtCtrls, ComCtrls, Version;
 {$ENDIF}
 {$IFDEF LINUX}
-  SysUtils, Classes, QGraphics, QControls, QForms, QDialogs,
-  QExtCtrls, QComCtrls, Version;
+SysUtils, Classes, QGraphics, QControls, QForms, QDialogs,
+QExtCtrls, QComCtrls, Version;
 {$ENDIF}
 
 type
-  TSplashForm = class(TForm)
-    Image: TImage;
-    Statusbar: TStatusbar;
-    procedure FormCreate(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
-  end;
+    TSplashForm = class(TForm)
+        Image: TImage;
+        Statusbar: TStatusbar;
+        procedure FormCreate(Sender: TObject);
+        procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    end;
 
 var
-  SplashForm: TSplashForm = nil;
+    SplashForm: TSplashForm = nil;
 
 implementation
 
-uses 
-  devcfg;
+uses
+    devcfg;
 
 {$R *.dfm}
 
 procedure TSplashForm.FormCreate(Sender: TObject);
 begin
-	if (devData.Splash <> '') and FileExists(devData.Splash) then begin
-		Image.Picture.LoadFromFile(devData.Splash);
-		ClientWidth:= Image.Width;
-		ClientHeight:= Image.Height + Statusbar.Height;
-	end;
-	Show;
-	Update;
+    if (devData.Splash <> '') and FileExists(devData.Splash) then begin
+        Image.Picture.LoadFromFile(devData.Splash);
+        ClientWidth := Image.Width;
+        ClientHeight := Image.Height + Statusbar.Height;
+    end;
+    Show;
+    Update;
 end;
 
 procedure TSplashForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-	Action := caFree;
+    Action := caFree;
 end;
 
 end.

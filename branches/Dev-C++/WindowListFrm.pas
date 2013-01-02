@@ -22,79 +22,79 @@ unit WindowListFrm;
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, ExtCtrls;
+    {$IFDEF WIN32}
+    Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+    StdCtrls, Buttons, ExtCtrls;
 {$ENDIF}
 {$IFDEF LINUX}
-  SysUtils, Classes, QGraphics, QControls, QForms, QDialogs,
-  QStdCtrls, QButtons, QExtCtrls;
+SysUtils, Classes, QGraphics, QControls, QForms, QDialogs,
+QStdCtrls, QButtons, QExtCtrls;
 {$ENDIF}
 
 type
-  TWindowListForm = class(TForm)
-    Panel: TPanel;
-    OkBtn: TBitBtn;
-    CancelBtn: TBitBtn;
-    Label1: TLabel;
-    GroupBox: TGroupBox;
-    UnitList: TListBox;
-    Label2: TLabel;
-    Label3: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
-    Label6: TLabel;
-    Label7: TLabel;
-    procedure FormCreate(Sender: TObject);
-    procedure UnitListDblClick(Sender: TObject);
-    procedure FormShow(Sender: TObject);
-    procedure UnitListKeyDown(Sender: TObject; var Key: Word;Shift: TShiftState);
-  end;
+    TWindowListForm = class(TForm)
+        Panel: TPanel;
+        OkBtn: TBitBtn;
+        CancelBtn: TBitBtn;
+        Label1: TLabel;
+        GroupBox: TGroupBox;
+        UnitList: TListBox;
+        Label2: TLabel;
+        Label3: TLabel;
+        Label4: TLabel;
+        Label5: TLabel;
+        Label6: TLabel;
+        Label7: TLabel;
+        procedure FormCreate(Sender: TObject);
+        procedure UnitListDblClick(Sender: TObject);
+        procedure FormShow(Sender: TObject);
+        procedure UnitListKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    end;
 
 implementation
 
-uses 
-{$IFDEF WIN32}
-  MultiLangSupport, devcfg;
+uses
+    {$IFDEF WIN32}
+    MultiLangSupport, devcfg;
 {$ENDIF}
 {$IFDEF LINUX}
-  Xlib, MultiLangSupport, devcfg;
+Xlib, MultiLangSupport, devcfg;
 {$ENDIF}
 
 {$R *.dfm}
 
 procedure TWindowListForm.FormCreate(Sender: TObject);
 begin
-  Caption:=           Lang[ID_WL];
-  GroupBox.Caption:=  '  '+Lang[ID_WL_SELECT]+'  ';
-  OkBtn.Caption :=    Lang[ID_BTN_OK];
-  CancelBtn.Caption:= Lang[ID_BTN_CANCEL];
+    Caption := Lang[ID_WL];
+    GroupBox.Caption := '  ' + Lang[ID_WL_SELECT] + '  ';
+    OkBtn.Caption := Lang[ID_BTN_OK];
+    CancelBtn.Caption := Lang[ID_BTN_CANCEL];
 end;
 
 procedure TWindowListForm.UnitListDblClick(Sender: TObject);
-var a : TCloseAction;
+var a: TCloseAction;
 begin
-  if UnitList.ItemIndex > -1 then begin
-    ModalResult := mrOk;
-    DoClose(a);
-  end;
+    if UnitList.ItemIndex > -1 then begin
+        ModalResult := mrOk;
+        DoClose(a);
+    end;
 end;
 
 procedure TWindowListForm.FormShow(Sender: TObject);
 begin
-  UnitList.SetFocus;
+    UnitList.SetFocus;
 end;
 
 procedure TWindowListForm.UnitListKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+    Shift: TShiftState);
 begin
-{$IFDEF WIN32}
-  if Key=vk_Return then
-{$ENDIF}
-{$IFDEF LINUX}
-  if Key = XK_RETURN then
-{$ENDIF}
-    UnitListDblClick(Sender);
+    {$IFDEF WIN32}
+    if Key = vk_Return then
+        {$ENDIF}
+        {$IFDEF LINUX}
+        if Key = XK_RETURN then
+            {$ENDIF}
+            UnitListDblClick(Sender);
 end;
 
 end.

@@ -22,33 +22,33 @@ unit ResourceSelectorFrm;
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons;
+    {$IFDEF WIN32}
+    Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+    Dialogs, StdCtrls, Buttons;
 {$ENDIF}
 {$IFDEF LINUX}
-  SysUtils, Variants, Classes, QGraphics, QControls, QForms,
-  QDialogs, QStdCtrls, QButtons;
+SysUtils, Variants, Classes, QGraphics, QControls, QForms,
+QDialogs, QStdCtrls, QButtons;
 {$ENDIF}
 
 type
-  TSelectResource = class(TForm)
-    List: TListBox;
-    OkBtn: TBitBtn;
-    Cancel: TBitBtn;
-    Edit1: TEdit;
-    procedure ListClick(Sender: TObject);
-    procedure Edit1Change(Sender: TObject);
-    procedure ListDblClick(Sender: TObject);
-  private
-    { Private declarations }
-  public
-    function Select(Resources: TStringList): AnsiString;
-    function SelectIndex(Resources: TStringList): Integer;
-  end;
+    TSelectResource = class(TForm)
+        List: TListBox;
+        OkBtn: TBitBtn;
+        Cancel: TBitBtn;
+        Edit1: TEdit;
+        procedure ListClick(Sender: TObject);
+        procedure Edit1Change(Sender: TObject);
+        procedure ListDblClick(Sender: TObject);
+    private
+        { Private declarations }
+    public
+        function Select(Resources: TStringList): AnsiString;
+        function SelectIndex(Resources: TStringList): Integer;
+    end;
 
 var
-  SelectResource: TSelectResource;
+    SelectResource: TSelectResource;
 
 implementation
 
@@ -56,70 +56,70 @@ implementation
 
 function TSelectResource.Select(Resources: TStringList): AnsiString;
 var
-  i: Integer;
+    i: Integer;
 begin
-  Result := '';
-  if Resources.Count = 0 then
-      Exit;
+    Result := '';
+    if Resources.Count = 0 then
+        Exit;
 
-  for i := 0 to Resources.Count - 1 do
-      List.Items.Add(ExtractFileName(Resources.Strings[i]));
-  List.ItemIndex := 0;
+    for i := 0 to Resources.Count - 1 do
+        List.Items.Add(ExtractFileName(Resources.Strings[i]));
+    List.ItemIndex := 0;
 
-  if ShowModal = mrOK then
-      Result := Resources.Strings[List.ItemIndex];
+    if ShowModal = mrOK then
+        Result := Resources.Strings[List.ItemIndex];
 end;
 
 function TSelectResource.SelectIndex(Resources: TStringList): Integer;
 var
-  i: Integer;
+    i: Integer;
 begin
-  Result := -1;
-  if Resources.Count = 0 then
-      Exit;
+    Result := -1;
+    if Resources.Count = 0 then
+        Exit;
 
-  for i := 0 to Resources.Count - 1 do
-      List.Items.Add(ExtractFileName(Resources.Strings[i]));
-  List.ItemIndex := 0;
-  Edit1.Text := List.Items[List.ItemIndex];
+    for i := 0 to Resources.Count - 1 do
+        List.Items.Add(ExtractFileName(Resources.Strings[i]));
+    List.ItemIndex := 0;
+    Edit1.Text := List.Items[List.ItemIndex];
 
-  if ShowModal = mrOK then
-      Result := List.ItemIndex;
+    if ShowModal = mrOK then
+        Result := List.ItemIndex;
 end;
 
 procedure TSelectResource.ListClick(Sender: TObject);
 begin
-  if List.ItemIndex <> -1 then
-      Edit1.Text := List.Items[List.ItemIndex];
+    if List.ItemIndex <> -1 then
+        Edit1.Text := List.Items[List.ItemIndex];
 end;
 
 procedure TSelectResource.Edit1Change(Sender: TObject);
 var
-  i: Integer;
+    i: Integer;
 begin
-  if Length(Edit1.Text) = 0 then
-  begin
-      List.ItemIndex := -1;
-      Exit;
-  end;
+    if Length(Edit1.Text) = 0 then
+    begin
+        List.ItemIndex := -1;
+        Exit;
+    end;
 
-  for i := 0 to List.Items.Count - 1 do
-      if CompareText(Copy(List.Items[i], 1, Length(Edit1.Text)),
-        Edit1.Text) = 0 then
-      begin
-          List.ItemIndex := i;
-          Exit;
-      end;
-  List.ItemIndex := -1;
+    for i := 0 to List.Items.Count - 1 do
+        if CompareText(Copy(List.Items[i], 1, Length(Edit1.Text)),
+            Edit1.Text) = 0 then
+        begin
+            List.ItemIndex := i;
+            Exit;
+        end;
+    List.ItemIndex := -1;
 end;
 
 procedure TSelectResource.ListDblClick(Sender: TObject);
-var a : TCloseAction;
+var a: TCloseAction;
 begin
-  if List.ItemIndex > -1 then begin
-    ModalResult := mrOk;
-    DoClose(a);
-  end;
+    if List.ItemIndex > -1 then begin
+        ModalResult := mrOk;
+        DoClose(a);
+    end;
 end;
 
 end.

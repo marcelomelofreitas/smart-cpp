@@ -22,79 +22,79 @@ unit ProcessListFrm;
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons, ExtCtrls, MultiLangSupport;
+    {$IFDEF WIN32}
+    Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+    Dialogs, StdCtrls, Buttons, ExtCtrls, MultiLangSupport;
 {$ENDIF}
 {$IFDEF LINUX}
-  SysUtils, Variants, Classes, QGraphics, QControls, QForms,
-  QDialogs, QStdCtrls, QButtons, QExtCtrls, MultiLangSupport;
+SysUtils, Variants, Classes, QGraphics, QControls, QForms,
+QDialogs, QStdCtrls, QButtons, QExtCtrls, MultiLangSupport;
 {$ENDIF}
 
 type
-  TProcessListForm = class(TForm)
-    OKBtn: TBitBtn;
-    CancelBtn: TBitBtn;
-    ProcessCombo: TComboBox;
-    MainLabel: TLabel;
-    procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
-  private
-    procedure LoadText;
-    { Private declarations }
-  public
-    ProcessList : TList;
-    { Public declarations }
-  end;
+    TProcessListForm = class(TForm)
+        OKBtn: TBitBtn;
+        CancelBtn: TBitBtn;
+        ProcessCombo: TComboBox;
+        MainLabel: TLabel;
+        procedure FormCreate(Sender: TObject);
+        procedure FormDestroy(Sender: TObject);
+    private
+        procedure LoadText;
+        { Private declarations }
+    public
+        ProcessList: TList;
+        { Public declarations }
+    end;
 
 var
-  ProcessListForm: TProcessListForm;
+    ProcessListForm: TProcessListForm;
 
 implementation
 
-uses 
-  tlhelp32, devcfg;
+uses
+    tlhelp32, devcfg;
 
 {$R *.dfm}
 
 procedure TProcessListForm.FormCreate(Sender: TObject);
 var
-  t  : THandle;
-  pe : TProcessEntry32;
-  HasProcess: boolean;
+    t: THandle;
+    pe: TProcessEntry32;
+    HasProcess: boolean;
 begin
-  LoadText;
-  ProcessList := TList.Create;
-  t := CreateToolhelp32Snapshot(TH32CS_SNAPALL, 0);
-  try
-    pe.dwSize:= SizeOf(pe);
-    HasProcess := Process32First(t, pe);
-    while HasProcess do begin
-      ProcessCombo.Items.Add(pe.szExeFile);
-      ProcessList.Add(pointer(pe.th32ProcessId));
-      HasProcess := Process32Next(t, pe);
+    LoadText;
+    ProcessList := TList.Create;
+    t := CreateToolhelp32Snapshot(TH32CS_SNAPALL, 0);
+    try
+        pe.dwSize := SizeOf(pe);
+        HasProcess := Process32First(t, pe);
+        while HasProcess do begin
+            ProcessCombo.Items.Add(pe.szExeFile);
+            ProcessList.Add(pointer(pe.th32ProcessId));
+            HasProcess := Process32Next(t, pe);
+        end;
+    finally
+        CloseHandle(t);
     end;
-  finally
-    CloseHandle(t);
-  end;
 end;
 
 procedure TProcessListForm.FormDestroy(Sender: TObject);
 begin
-  ProcessList.Free;
+    ProcessList.Free;
 end;
 
 procedure TProcessListForm.LoadText;
 begin
-	// Set interface font
-	Font.Name := devData.InterfaceFont;
-	Font.Size := devData.InterfaceFontSize;
+    // Set interface font
+    Font.Name := devData.InterfaceFont;
+    Font.Size := devData.InterfaceFontSize;
 
-  Caption := Lang[ID_ITEM_ATTACHPROCESS];
-  MainLabel.Caption := Lang[ID_MSG_ATTACH];
-  MainLabel.Width := 360;
-  OKBtn.Caption := Lang[ID_BTN_OK];
-  CancelBtn.Caption := Lang[ID_BTN_CANCEL];
+    Caption := Lang[ID_ITEM_ATTACHPROCESS];
+    MainLabel.Caption := Lang[ID_MSG_ATTACH];
+    MainLabel.Width := 360;
+    OKBtn.Caption := Lang[ID_BTN_OK];
+    CancelBtn.Caption := Lang[ID_BTN_CANCEL];
 end;
 
 end.

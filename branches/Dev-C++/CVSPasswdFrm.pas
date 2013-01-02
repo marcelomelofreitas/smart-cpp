@@ -22,46 +22,45 @@ unit CVSPasswdFrm;
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls;
+    {$IFDEF WIN32}
+    Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+    Dialogs, StdCtrls;
 {$ENDIF}
 {$IFDEF LINUX}
-  SysUtils, Variants, Classes, QGraphics, QControls, QForms,
-  QDialogs, QStdCtrls;
+SysUtils, Variants, Classes, QGraphics, QControls, QForms,
+QDialogs, QStdCtrls;
 {$ENDIF}
 
 type
-  TCVSPasswdForm = class(TForm)
-    Label1: TLabel;
-    txtPass: TEdit;
-    btnOK: TButton;
-    procedure FormShow(Sender: TObject);
-  private
-    { Private declarations }
-  public
-    { Public declarations }
-  end;
+    TCVSPasswdForm = class(TForm)
+        Label1: TLabel;
+        txtPass: TEdit;
+        btnOK: TButton;
+        procedure FormShow(Sender: TObject);
+    private
+        { Private declarations }
+    public
+        { Public declarations }
+    end;
 
-//var
-//  CVSPasswdForm: TCVSPasswdForm;
+    //var
+    //  CVSPasswdForm: TCVSPasswdForm;
 
 implementation
 
-uses 
-  devcfg;
+uses
+    devcfg;
 
 {$R *.dfm}
 
 procedure TCVSPasswdForm.FormShow(Sender: TObject);
 begin
-	// Set interface font
-	Font.Name := devData.InterfaceFont;
-	Font.Size := devData.InterfaceFontSize;
+    // Set interface font
+    Font.Name := devData.InterfaceFont;
+    Font.Size := devData.InterfaceFontSize;
 
-	txtPass.Text := '';
-	txtPass.SetFocus;
+    txtPass.Text := '';
+    txtPass.SetFocus;
 end;
 
 end.
-

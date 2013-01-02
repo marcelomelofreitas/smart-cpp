@@ -22,38 +22,38 @@ unit IconFrm;
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Messages, SysUtils, Classes, Graphics, Forms, 
-  ImgList, ComCtrls, Buttons, StdCtrls, Controls, Dialogs, ExtDlgs;
+    {$IFDEF WIN32}
+    Windows, Messages, SysUtils, Classes, Graphics, Forms,
+    ImgList, ComCtrls, Buttons, StdCtrls, Controls, Dialogs, ExtDlgs;
 {$ENDIF}
 {$IFDEF LINUX}
-  SysUtils, Classes, QGraphics, QForms, 
-  QImgList, QComCtrls, QButtons, QStdCtrls, QControls, QDialogs;
+SysUtils, Classes, QGraphics, QForms,
+QImgList, QComCtrls, QButtons, QStdCtrls, QControls, QDialogs;
 {$ENDIF}
 
 type
-  TIconForm = class(TForm)
-    btnOk: TBitBtn;
-    btnCancel: TBitBtn;
-    ImageList: TImageList;
-    dlgPic: TOpenPictureDialog;
-    IconView: TListView;
-    procedure btnOkClick(Sender: TObject);
-    procedure FormActivate(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
-    procedure IconViewInfoTip(Sender: TObject; Item: TListItem;
-      var InfoTip: AnsiString);
-    procedure IconViewDblClick(Sender: TObject);
-   private
-    procedure LoadText;
-    function AddItem(const FileName: AnsiString): TListItem;
-    function GetSelected: AnsiString;
-   public
-    property Selected: AnsiString read GetSelected;
-  end;
+    TIconForm = class(TForm)
+        btnOk: TBitBtn;
+        btnCancel: TBitBtn;
+        ImageList: TImageList;
+        dlgPic: TOpenPictureDialog;
+        IconView: TListView;
+        procedure btnOkClick(Sender: TObject);
+        procedure FormActivate(Sender: TObject);
+        procedure FormCreate(Sender: TObject);
+        procedure FormDestroy(Sender: TObject);
+        procedure IconViewInfoTip(Sender: TObject; Item: TListItem;
+            var InfoTip: AnsiString);
+        procedure IconViewDblClick(Sender: TObject);
+    private
+        procedure LoadText;
+        function AddItem(const FileName: AnsiString): TListItem;
+        function GetSelected: AnsiString;
+    public
+        property Selected: AnsiString read GetSelected;
+    end;
 
-{ ** modify with browse ablity - include options to copy ico to directory}
+    { ** modify with browse ablity - include options to copy ico to directory}
 
 implementation
 
@@ -63,22 +63,22 @@ uses Version, MultiLangSupport, devcfg, utils;
 
 procedure TIconForm.LoadText;
 begin
-	// Set interface font
-	Font.Name := devData.InterfaceFont;
-	Font.Size := devData.InterfaceFontSize;
+    // Set interface font
+    Font.Name := devData.InterfaceFont;
+    Font.Size := devData.InterfaceFontSize;
 
-  Caption:=             Lang[ID_IF];
-  btnOk.Caption:=       Lang[ID_IF_USEICO];
-  btnCancel.Caption:=   Lang[ID_BTN_CANCEL];
+    Caption := Lang[ID_IF];
+    btnOk.Caption := Lang[ID_IF_USEICO];
+    btnCancel.Caption := Lang[ID_BTN_CANCEL];
 end;
 
 procedure TIconForm.btnOkClick(Sender: TObject);
 begin
-  if IconView.Selected = nil then
-  begin
-    ModalResult := mrNone;
-    exit;
-  end;
+    if IconView.Selected = nil then
+    begin
+        ModalResult := mrNone;
+        exit;
+    end;
 end;
 
 procedure TIconForm.FormActivate(Sender: TObject);
@@ -86,84 +86,83 @@ begin
 end;
 
 // modifed to work with multiple directories.
+
 procedure TIconForm.FormCreate(Sender: TObject);
 var
-  SRec: TSearchRec;
-  SFile: AnsiString;
-  tmp: TStrings;
-  idx: integer;
+    SRec: TSearchRec;
+    SFile: AnsiString;
+    tmp: TStrings;
+    idx: integer;
 begin
-  LoadText;
-  with IconView do
-   try
-    ImageList.Clear;
-    Items.BeginUpdate;
-    Items.Clear;
-    tmp:= TStringList.Create;
+    LoadText;
+    with IconView do
     try
-     StrtoList(devDirs.Icons, tmp);
-     if tmp.Count> 0 then
-      for idx:= 0 to pred(tmp.Count) do
-       begin
-         sFile:= ExpandFileto(tmp[idx], devDirs.Exec) +'*.ico';
-         if FindFirst(sFile, faAnyFile, SRec) = 0 then
-          repeat
-            // pase filename with full path
-            Self.AddItem(IncludeTrailingPathDelimiter(tmp[idx])+ srec.Name);
-          until FindNext(SRec) <> 0;
-       end;
+        ImageList.Clear;
+        Items.BeginUpdate;
+        Items.Clear;
+        tmp := TStringList.Create;
+        try
+            StrtoList(devDirs.Icons, tmp);
+            if tmp.Count > 0 then
+                for idx := 0 to pred(tmp.Count) do
+                begin
+                    sFile := ExpandFileto(tmp[idx], devDirs.Exec) + '*.ico';
+                    if FindFirst(sFile, faAnyFile, SRec) = 0 then
+                        repeat
+                            // pase filename with full path
+                            Self.AddItem(IncludeTrailingPathDelimiter(tmp[idx]) + srec.Name);
+                        until FindNext(SRec) <> 0;
+                end;
+        finally
+            tmp.Free;
+        end;
     finally
-     tmp.Free;
+        Items.EndUpdate;
     end;
-   finally
-    Items.EndUpdate;
-   end;
 end;
 
 procedure TIconForm.FormDestroy(Sender: TObject);
 begin
-  ImageList.Clear;
+    ImageList.Clear;
 end;
 
 function TIconForm.GetSelected: AnsiString;
 begin
-  if assigned(IconView.Selected) then
-   result:= IconView.Selected.SubItems[0]
-  else
-   result:= '';
+    if assigned(IconView.Selected) then
+        result := IconView.Selected.SubItems[0]
+    else
+        result := '';
 end;
 
 function TIconForm.AddItem(const FileName: AnsiString): TListItem;
 var
- icon: TIcon;
- Item: TListItem;
- fFile: AnsiString;
+    icon: TIcon;
+    Item: TListItem;
+    fFile: AnsiString;
 begin
-  Item:= IconView.Items.Add;
-  //full path is passed from FormCreate
-  fFile:= FileName;
-  Item.SubItems.Add(fFile);
-  Icon:= TIcon.Create;
-  Icon.LoadFromFile(fFile);
-  Item.ImageIndex:= ImageList.AddIcon(Icon);
-  result:= Item;
+    Item := IconView.Items.Add;
+    //full path is passed from FormCreate
+    fFile := FileName;
+    Item.SubItems.Add(fFile);
+    Icon := TIcon.Create;
+    Icon.LoadFromFile(fFile);
+    Item.ImageIndex := ImageList.AddIcon(Icon);
+    result := Item;
 
-  fFile:= ExtractFileName(fFile);
-  Item.Caption:= copy(fFile, 1, length(FFile) -length(ExtractFileExt(FFile)));
-  // need to add for including more directories
+    fFile := ExtractFileName(fFile);
+    Item.Caption := copy(fFile, 1, length(FFile) - length(ExtractFileExt(FFile)));
+    // need to add for including more directories
 end;
 
 procedure TIconForm.IconViewInfoTip(Sender: TObject; Item: TListItem;
-  var InfoTip: AnsiString);
+    var InfoTip: AnsiString);
 begin
-  InfoTip:= Item.SubItems[0];
+    InfoTip := Item.SubItems[0];
 end;
 
 procedure TIconForm.IconViewDblClick(Sender: TObject);
 begin
-  ModalResult := mrOk;
+    ModalResult := mrOk;
 end;
 
 end.
-
-
