@@ -33,7 +33,7 @@ QDialogs, QStdCtrls, QExtCtrls, CppParser, QComCtrls;
 
 type
     TFunctionSearchForm = class(TForm)
-        Label1: TLabel;
+        lblSearch: TLabel;
         txtSearch: TEdit;
         lvEntries: TListView;
         procedure txtSearchChange(Sender: TObject);
@@ -51,14 +51,14 @@ type
     public
         { Public declarations }
         fParser: TCppParser;
-        fFileName: TFileName;
+        fFileName: AnsiString;
     end;
 
 implementation
 
 uses
     {$IFDEF WIN32}
-    devcfg;
+    devcfg, utils;
 {$ENDIF}
 {$IFDEF LINUX}
 Xlib, devcfg;
@@ -69,6 +69,7 @@ Xlib, devcfg;
 procedure TFunctionSearchForm.txtSearchChange(Sender: TObject);
 var
     I: integer;
+    st: PStatement;
 begin
     if not Assigned(fParser) then
         Exit;
@@ -76,29 +77,35 @@ begin
     lvEntries.Items.BeginUpdate;
     lvEntries.Items.Clear;
 
-    for I := 0 to fParser.Statements.Count - 1 do
-        if PStatement(fParser.Statements[I])^._Kind = skFunction then
-            if (PStatement(fParser.Statements[I])^._IsDeclaration and SameText(PStatement(fParser.Statements[I])^._DeclImplFileName, fFilename)) or
-                (not PStatement(fParser.Statements[I])^._IsDeclaration and SameText(PStatement(fParser.Statements[I])^._FileName, fFilename)) then
 
-                if (txtSearch.Text = '') or (Pos(LowerCase(txtSearch.Text), LowerCase(PStatement(fParser.Statements[I])^._ScopelessCmd)) > 0) then begin
+    for I := 0 to fParser.Statements.Count - 1 do begin
+
+        st := PStatement(fParser.Statements[I]);
+
+        if st^._Kind in [skFunction, skConstructor, skDestructor] then
+            if (st^._IsDeclaration and SameFileName(st^._DeclImplFileName, fFilename)) or
+                (not st^._IsDeclaration and SameFileName(st^._FileName, fFilename)) then
+
+                if (txtSearch.Text = '') or ContainsText(st^._ScopelessCmd, txtSearch.Text) then begin
                     with lvEntries.Items.Add do begin
                         ImageIndex := -1;
-                        case PStatement(fParser.Statements[I])^._ClassScope of
+                        case st^._ClassScope of
                             scsPrivate: StateIndex := 5;
                             scsProtected: StateIndex := 6;
                             scsPublic: StateIndex := 7;
                             scsPublished: StateIndex := 7;
                         end;
-                        SubItems.Add(PStatement(fParser.Statements[I])^._Type);
-                        SubItems.Add(PStatement(fParser.Statements[I])^._ScopeCmd);
-                        if PStatement(fParser.Statements[I])^._IsDeclaration then
-                            SubItems.Add(IntToStr(PStatement(fParser.Statements[I])^._DeclImplLine))
+                        SubItems.Add(st^._Type);
+                        SubItems.Add(st^._ScopeCmd);
+                        if st^._IsDeclaration then
+                            SubItems.Add(IntToStr(st^._DeclImplLine))
                         else
-                            SubItems.Add(IntToStr(PStatement(fParser.Statements[I])^._Line));
+                            SubItems.Add(IntToStr(st^._Line));
                         Data := fParser.Statements[I];
                     end;
                 end;
+
+    end;
 
     lvEntries.AlphaSort;
     if lvEntries.ItemIndex = -1 then
@@ -119,15 +126,16 @@ end;
 
 procedure TFunctionSearchForm.txtSearchKeyPress(Sender: TObject; var Key: Char);
 begin
-    if lvEntries = nil then Exit;
     case Key of
         Chr(VK_ESCAPE): begin
                 ModalResult := mrCancel;
                 Key := #0;
             end;
         Chr(VK_RETURN): begin
-                ModalResult := mrOK;
-                Key := #0;
+                if Assigned(lvEntries.Selected) then begin
+                    ModalResult := mrOK;
+                    Key := #0;
+                end;
             end;
     end;
 end;
@@ -144,7 +152,7 @@ end;
 
 procedure TFunctionSearchForm.lvEntriesDblClick(Sender: TObject);
 begin
-    if lvEntries.Selected <> nil then
+    if Assigned(lvEntries.Selected) then
         ModalResult := mrOK;
 end;
 
@@ -155,10 +163,17 @@ begin
 end;
 
 procedure TFunctionSearchForm.LoadText;
+var
+    len: integer;
 begin
     // Set interface font
     Font.Name := devData.InterfaceFont;
     Font.Size := devData.InterfaceFontSize;
+
+    // Make sure the translation fits
+    len := Canvas.TextWidth(lblSearch.Caption);
+    txtSearch.Left := len + 10;
+    txtSearch.Width := ClientWidth - len - 14;
 end;
 
 procedure TFunctionSearchForm.FormCreate(Sender: TObject);

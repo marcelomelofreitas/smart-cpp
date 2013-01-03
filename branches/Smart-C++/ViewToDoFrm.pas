@@ -395,7 +395,7 @@ begin
 
     e := MainForm.GetEditorFromFilename(PToDoRec(lv.Selected.Data)^.Filename);
     if Assigned(e) then begin
-        e.GotoLineNr(PToDoRec(lv.Selected.Data)^.Line + 1);
+        e.SetCaretPos(PToDoRec(lv.Selected.Data)^.Line + 1, 1);
         Close;
     end;
 end;

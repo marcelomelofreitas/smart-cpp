@@ -44,8 +44,6 @@ type
         tabGeneral: TTabSheet;
         lblMRU: TLabel;
         lblMsgTabs: TLabel;
-        lblLang: TLabel;
-        lblTheme: TLabel;
         cbBackups: TCheckBox;
         cbMinOnRun: TCheckBox;
         cbDefCpp: TCheckBox;
@@ -61,8 +59,6 @@ type
         cbAutoCloseProgress: TCheckBox;
         seMRUMax: TSpinEdit;
         cboTabsTop: TComboBox;
-        cboLang: TComboBox;
-        cboTheme: TComboBox;
         tabPaths: TTabSheet;
         lblUserDir: TLabel;
         lblTemplatesDir: TLabel;
@@ -210,21 +206,6 @@ begin
         cbPauseConsole.Checked := ConsolePause;
         seMRUMax.Value := MRUMax;
 
-        // List the languages
-        cboLang.Items.BeginUpdate;
-        cboLang.Clear;
-        for idx := 0 to Lang.Langs.Count - 1 do begin
-            sel := cboLang.Items.Add(Lang.Langs.ValueFromIndex[idx]);
-            if SameText(Lang.CurrentLanguage, cboLang.Items[sel]) then
-                cboLang.ItemIndex := idx;
-        end;
-        cboLang.Items.EndUpdate;
-
-        // List the themes
-        cboTheme.Items.Clear;
-        devImageThemes.GetThemeTitles(cboTheme.Items);
-        cboTheme.ItemIndex := devImageThemes.IndexOf(devImageThemes.CurrentTheme.Title);
-
         cbShowProgress.Checked := ShowProgress;
         cbAutoCloseProgress.Checked := AutoCloseProgress;
 
@@ -305,11 +286,6 @@ begin
         AutoOpen := rgbAutoOpen.ItemIndex;
         Splash := edSplash.Text;
 
-        s := Lang.FileFromDescription(cboLang.Text);
-        LangChange := s <> Language;
-        Language := s;
-        ThemeChange := cboTheme.Text <> devData.Theme;
-        Theme := cboTheme.Text;
         NoSplashScreen := cbNoSplashScreen.Checked;
         ShowProgress := cbShowProgress.Checked;
         AutoCloseProgress := cbAutoCloseProgress.Checked;
@@ -360,74 +336,6 @@ begin
     // Set interface font
     Font.Name := devData.InterfaceFont;
     Font.Size := devData.InterfaceFontSize;
-
-    Caption := Lang[ID_ENV];
-
-    //Tabs
-    tabGeneral.Caption := Lang[ID_ENV_GENTAB];
-    tabPaths.Caption := Lang[ID_ENV_PATHTAB];
-    tabAssocs.Caption := Lang[ID_ENV_FASSTAB];
-    tabCVS.Caption := Lang[ID_ENV_CVSTAB];
-    tabExternal.Caption := Lang[ID_ENV_EXTERNALS];
-
-    //Buttons
-    btnOk.Caption := Lang[ID_BTN_OK];
-    btnCancel.Caption := Lang[ID_BTN_CANCEL];
-    btnHelp.Caption := Lang[ID_BTN_HELP];
-
-    //Controls
-    cbDefCpp.Caption := Lang[ID_ENV_DEFCPP];
-    cbShowBars.Caption := Lang[ID_ENV_SHOWBARS];
-    cbMultiLineTab.Caption := Lang[ID_ENV_MULTILINETABS];
-    cbBackups.Caption := Lang[ID_ENV_BACKUPS];
-    cbMinOnRun.Caption := Lang[ID_ENV_MINONRUN];
-    cbdblFiles.Caption := Lang[ID_ENV_DBLFILES];
-    cbNoSplashScreen.Caption := Lang[ID_ENV_NOSPLASH];
-    cbPauseConsole.Caption := Lang[ID_ENV_PAUSECONSOLE];
-
-    gbProgress.Caption := ' ' + Lang[ID_ENV_COMPPROGRESSWINDOW] + ' ';
-    cbShowProgress.Caption := Lang[ID_ENV_SHOWPROGRESS];
-    cbAutoCloseProgress.Caption := Lang[ID_ENV_AUTOCLOSEPROGRESS];
-
-    cbWatchHint.Caption := Lang[ID_ENV_WATCHHINT];
-    gbDebugger.Caption := ' ' + Lang[ID_ENV_DEBUGGER] + ' ';
-
-    rgbAutoOpen.Caption := ' ' + Lang[ID_ENV_AUTOOPEN] + ' ';
-    rgbAutoOpen.Items[0] := Lang[ID_ENV_AUTOALL];
-    rgbAutoOpen.Items[1] := Lang[ID_ENV_AUTOFIRST];
-    rgbAutoOpen.Items[2] := Lang[ID_ENV_AUTOREMEMBER];
-    rgbAutoOpen.Items[3] := Lang[ID_ENV_AUTONONE];
-
-    gbAltConfig.Caption := ' ' + Lang[ID_ENV_GBALTCONFIG] + ' ';
-    lblLang.Caption := Lang[ID_ENV_LANGUAGE];
-    lblTheme.Caption := Lang[ID_ENV_THEME];
-    lblmsgTabs.Caption := Lang[ID_ENV_MSGTABS];
-    lblMRU.Caption := Lang[ID_ENV_MRU];
-
-    lblUserDir.Caption := Lang[ID_ENV_USERDIR];
-    lblTemplatesDir.Caption := Lang[ID_ENV_TEMPLATESDIR];
-    lblIcoLib.Caption := Lang[ID_ENV_ICOLIB];
-    lblSplash.Caption := Lang[ID_ENV_SPLASH];
-    lblLangPath.Caption := Lang[ID_ENV_SELLANGDIR];
-
-    // externals tab
-    lblExternal.Caption := Lang[ID_ENV_EXTERNPROGASSOCS];
-    vleExternal.TitleCaptions.Clear;
-    vleExternal.TitleCaptions.Add(Lang[ID_ENV_EXTERNEXT]);
-    vleExternal.TitleCaptions.Add(Lang[ID_ENV_EXTERNPROG]);
-
-    btnExtAdd.Caption := Lang[ID_BTN_ADD];
-    btnExtDel.Caption := Lang[ID_BTN_DELETE];
-
-    // associations tab
-    lblAssocFileTypes.Caption := Lang[ID_ENV_FASSTYPES];
-    lblAssocDesc.Caption := Lang[ID_ENV_FASSDESC];
-
-    // CVS support tab
-    lblCVSExec.Caption := Lang[ID_ENV_CVSEXE];
-    lblCVSCompression.Caption := Lang[ID_ENV_CVSCOMPR];
-    chkCVSUseSSH.Caption := Lang[ID_ENV_CVSUSESSH];
-    uifontlabel.Caption := Lang[ID_ENV_UIFONT];
 end;
 
 procedure TEnviroForm.btnHelpClick(Sender: TObject);
