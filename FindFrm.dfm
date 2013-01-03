@@ -1,7 +1,7 @@
 object frmFind: TfrmFind
   Left = 672
   Top = 219
-  BorderIcons = []
+  BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = #26597#25214#21644#26367#25442
   ClientHeight = 330
@@ -88,7 +88,6 @@ object frmFind: TfrmFind
       Height = 21
       ItemHeight = 13
       TabOrder = 0
-      OnChange = cboFindTextChange
     end
     object grpOptions: TGroupBox
       Left = 8

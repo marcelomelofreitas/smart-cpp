@@ -19,6 +19,7 @@ object MainForm: TMainForm
   Position = poDefault
   ShowHint = True
   WindowState = wsMaximized
+  OnActivate = FormActivate
   OnClose = FormClose
   OnContextPopup = FormContextPopup
   OnCreate = FormCreate
@@ -63,7 +64,7 @@ object MainForm: TMainForm
         Left = 0
         Top = 0
         Width = 740
-        Height = 155
+        Height = 154
         Align = alClient
         BevelOuter = bvNone
         BorderStyle = bsNone
@@ -154,6 +155,13 @@ object MainForm: TMainForm
           Font.Style = []
           ParentFont = False
         end
+        object WarningLabel: TLabel
+          Left = 8
+          Top = 36
+          Width = 72
+          Height = 13
+          Caption = 'Total warnings:'
+        end
         object SizeFile: TEdit
           Left = 112
           Top = 32
@@ -170,6 +178,15 @@ object MainForm: TMainForm
           Height = 21
           ReadOnly = True
           TabOrder = 0
+          Text = '0'
+        end
+        object TotalWarnings: TEdit
+          Left = 96
+          Top = 32
+          Width = 128
+          Height = 21
+          ReadOnly = True
+          TabOrder = 2
           Text = '0'
         end
       end
@@ -207,7 +224,7 @@ object MainForm: TMainForm
         TabOrder = 0
         DesignSize = (
           269
-          155)
+          154)
         object lblSendCommandGdb: TLabel
           Left = 8
           Top = 7
@@ -222,7 +239,7 @@ object MainForm: TMainForm
           Width = 129
           Height = 21
           Anchors = [akLeft, akTop, akRight]
-          ItemHeight = 13
+          ItemHeight = 0
           TabOrder = 0
           OnKeyPress = edGdbCommandKeyPress
         end
@@ -230,7 +247,7 @@ object MainForm: TMainForm
           Left = 8
           Top = 30
           Width = 257
-          Height = 106
+          Height = 105
           Align = alCustom
           Anchors = [akLeft, akTop, akRight, akBottom]
           ReadOnly = True
@@ -242,7 +259,7 @@ object MainForm: TMainForm
         Left = 0
         Top = 0
         Width = 471
-        Height = 155
+        Height = 154
         Align = alLeft
         BevelOuter = bvNone
         BiDiMode = bdLeftToRight
@@ -250,7 +267,7 @@ object MainForm: TMainForm
         TabOrder = 1
         DesignSize = (
           471
-          155)
+          154)
         object DDebugBtn: TSpeedButton
           Left = 4
           Top = 8
@@ -404,7 +421,7 @@ object MainForm: TMainForm
           Width = 400
           Height = 21
           Anchors = [akLeft, akTop, akRight]
-          ItemHeight = 13
+          ItemHeight = 0
           TabOrder = 7
           OnKeyPress = EvaluateInputKeyPress
         end
@@ -412,7 +429,7 @@ object MainForm: TMainForm
           Left = 4
           Top = 125
           Width = 460
-          Height = 12
+          Height = 11
           Align = alCustom
           Anchors = [akLeft, akTop, akRight, akBottom]
           ReadOnly = True
@@ -424,7 +441,7 @@ object MainForm: TMainForm
           Top = 68
           Width = 112
           Height = 25
-          Action = actStatusbar
+          Action = actSkipFunction
           TabOrder = 9
         end
         object IntoInsBtn: TButton
@@ -946,7 +963,7 @@ object MainForm: TMainForm
         Left = 0
         Top = 0
         Width = 185
-        Height = 195
+        Height = 194
         Align = alClient
         Anchors = [akLeft, akTop, akBottom]
         BevelInner = bvNone
@@ -982,7 +999,7 @@ object MainForm: TMainForm
         Left = 0
         Top = 0
         Width = 185
-        Height = 195
+        Height = 194
         Align = alClient
         Images = dmMain.ClassImages
         ReadOnly = True
@@ -1019,7 +1036,7 @@ object MainForm: TMainForm
         Left = 0
         Top = 0
         Width = 185
-        Height = 195
+        Height = 194
         Align = alClient
         BevelInner = bvNone
         BevelOuter = bvNone

@@ -93,6 +93,7 @@ type
         property RunParams: AnsiString read fRunParams write fRunParams;
         property MakeFile: AnsiString read GetMakeFile write fMakeFile;
         property Target: TTarget read fTarget write fTarget;
+        property WarningCount: integer read fWarnCount;
         property ErrorCount: integer read fErrCount;
         procedure OnAbortCompile(Sender: TObject);
         procedure AbortThread;
@@ -251,7 +252,7 @@ begin
     end;
     result := true;
     writeln(F, '# Project: ' + fProject.Name);
-    writeln(F, '# Makefile created by Smart-C++ ' + DEVCPP_VERSION);
+    writeln(F, '# Makefile created by Dev-C++ ' + DEVCPP_VERSION);
     writeln(F);
     if DoCheckSyntax then begin
         writeln(F, '# This Makefile is written for syntax check!');
@@ -594,9 +595,9 @@ begin
 
     SwitchToProjectCompilerSet;
 
-    InitProgressForm('Compiling...');
+    InitProgressForm('ÕýÔÚ±àÒë...');
 
-    DoLogEntry(Format('%s: %s', [Lang[ID_COPT_COMPTAB], devCompiler.Sets[devCompiler.CurrentIndex]]));
+    DoLogEntry(Format('%s: %s', ['±àÒëÆ÷', devCompiler.Sets[devCompiler.CurrentIndex]]));
 
     // Done by buildmakefile
     if not Assigned(fProject) then begin
@@ -940,9 +941,6 @@ begin
 
         if fErrCount = 0 then
             fErrCount := 1;
-
-        if Pos('Error 1', O_Msg) > 0 then
-            O_Msg := O_Msg + ' (if this is the only error: please check your library includes)';
 
         Inc(fErrCount);
         DoOutput('', '', O_File, O_Msg);

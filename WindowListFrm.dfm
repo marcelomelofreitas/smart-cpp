@@ -13,6 +13,7 @@ object WindowListForm: TWindowListForm
   Font.Style = []
   OldCreateOrder = True
   Position = poScreenCenter
+  OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -69,11 +70,9 @@ object WindowListForm: TWindowListForm
       Width = 91
       Height = 25
       Anchors = [akRight, akBottom]
-      Cancel = True
       Caption = #21462#28040'(&C)'
-      ModalResult = 2
       TabOrder = 1
-      NumGlyphs = 2
+      Kind = bkCancel
     end
   end
   object GroupBox: TGroupBox

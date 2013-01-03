@@ -196,7 +196,7 @@ begin
         2: VarScope := scsPublic;
         3: VarScope := scsPublished;
     else
-        VarScope := scsPublic;
+        VarScope := scsNone;
     end;
     VarRead := chkReadFunc.Checked;
     VarReadFunc := txtReadFunc.Text;
@@ -278,7 +278,7 @@ begin
             scsPublished: e.Text.Lines.Insert(Line, #9'published:');
         end;
 
-    e.GotoLineNr(Line + memDescr.Lines.Count);
+    e.SetCaretPos(Line + memDescr.Lines.Count, 1);
     e.Text.Modified := True;
 
     // if needed, insert a new member function for READ access to the new var
@@ -328,7 +328,7 @@ begin
         e.Text.Lines.Append(#9'return ' + VarName + ';');
         e.Text.Lines.Append('}');
         e.Text.Lines.Append('');
-        e.GotoLineNr(e.Text.Lines.Count - 1);
+        e.SetCaretPos(e.Text.Lines.Count - 1, 1);
         e.Text.Modified := True;
     end;
 
@@ -341,7 +341,7 @@ begin
         e.Text.Lines.Append(#9 + VarName + ' = x;');
         e.Text.Lines.Append('}');
         e.Text.Lines.Append('');
-        e.GotoLineNr(e.Text.Lines.Count - 1);
+        e.SetCaretPos(e.Text.Lines.Count - 1, 1);
         e.Text.Modified := True;
     end;
 

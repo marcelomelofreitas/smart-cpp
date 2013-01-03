@@ -25,7 +25,7 @@ uses
     {$IFDEF WIN32}
     Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, CodeCompletion, CppParser,
     Menus, ImgList, ComCtrls, StdCtrls, ExtCtrls, SynEdit, SynEditKeyCmds, version, SynEditCodeFolding,
-    SynCompletionProposal, SynEditTextBuffer, Math, StrUtils, SynEditTypes, SynEditHighlighter, CodeToolTip;
+    SynCompletionProposal, SynEditTextBuffer, Math, StrUtils, SynEditTypes, SynEditHighlighter, DateUtils, CodeToolTip;
 {$ENDIF}
 {$IFDEF LINUX}
 SysUtils, Classes, Graphics, QControls, QForms, QDialogs, CodeCompletion, CppParser,
@@ -37,12 +37,12 @@ type
     TEditor = class;
     TDebugGutter = class(TSynEditPlugin)
     protected
-        fEditor: TEditor;
+        e: TEditor;
         procedure AfterPaint(ACanvas: TCanvas; const AClip: TRect; FirstLine, LastLine: integer); override;
         procedure LinesInserted(FirstLine, Count: integer); override;
         procedure LinesDeleted(FirstLine, Count: integer); override;
     public
-        constructor Create(ed: TEditor);
+        constructor Create(editor: TEditor);
     end;
 
     TEditor = class(TObject)
@@ -67,9 +67,10 @@ type
         fMouseOverTimer: TTimer;
         fAllowMouseOver: boolean;
 
-        HasCompletedParentheses: integer; // Set to 2 on completion during KeyPress, to 1 immediately after by KeyDown, and to 0 upon next key
-        HasCompletedArray: integer; // ...
-        HasCompletedCurly: integer; // ...
+        // These closing chars have already been typed, ignore manual closings
+        WaitForParenths: integer; // 2 means true, 1 means 'handled by KeyDown', 0 means false
+        WaitForArray: integer;
+        WaitForCurly: integer;
 
         procedure EditorKeyPress(Sender: TObject; var Key: Char);
         procedure EditorKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -94,6 +95,7 @@ type
 
         function FunctionTipAllowed: boolean;
         procedure FunctionTipTimer(Sender: TObject);
+        function HandpointAllowed(var mousepos: TBufferCoord): boolean;
 
         procedure SetFileName(const value: AnsiString);
         procedure EditorPaintTransient(Sender: TObject; Canvas: TCanvas; TransientType: TTransientType);
@@ -104,14 +106,14 @@ type
         // Recoded breakpoint stuff
         function HasBreakPoint(Line: integer): integer;
         procedure ToggleBreakPoint(Line: integer);
-        procedure DrawGutterImages(ACanvas: TCanvas; AClip: TRect; FirstLine, LastLine: integer);
+        procedure DebugAfterPaint(ACanvas: TCanvas; AClip: TRect; FirstLine, LastLine: integer);
 
         // Debugger callback
         procedure OnMouseOverEvalReady(const evalvalue: AnsiString);
 
         procedure Activate;
         procedure GotoLine;
-        procedure GotoLineNr(Nr: integer);
+        procedure SetCaretPos(line, col: integer; settopline: boolean = true); // takes folds into account
         procedure Exportto(filetype: integer);
         procedure InsertString(Value: AnsiString; MoveCursor: boolean);
         procedure SetErrorFocus(Col, Line: integer);
@@ -128,9 +130,10 @@ type
         procedure IndentSelection;
         procedure UnindentSelection;
 
-        procedure UpdateParser; // Must be called after recreating the parser
         procedure InitCompletion;
         procedure DestroyCompletion;
+
+        procedure SetTabIndex(index: integer);
 
         property FileName: AnsiString read fFileName write SetFileName;
         property InProject: boolean read fInProject write fInProject;
@@ -139,6 +142,7 @@ type
         property Text: TSynEdit read fText write fText;
         property TabSheet: TTabSheet read fTabSheet write fTabSheet;
         property FunctionTip: TCodeToolTip read fFunctionTip;
+        property CompletionBox: TCodeCompletion read fCompletionBox;
     end;
 
 implementation
@@ -146,7 +150,7 @@ implementation
 uses
     {$IFDEF WIN32}
     main, project, devcfg, utils,
-    datamod, GotoLineFrm, Macros, debugreader, SynEditMiscClasses;
+    datamod, GotoLineFrm, Macros, debugreader, CodeCompletionForm, SynEditMiscClasses;
 {$ENDIF}
 {$IFDEF LINUX}
 Xlib, main, project, devcfg, Search_Center, utils,
@@ -155,23 +159,42 @@ datamod, GotoLineFrm, Macros;
 
 { TDebugGutter }
 
-constructor TDebugGutter.Create(ed: TEditor);
+constructor TDebugGutter.Create(editor: TEditor);
 begin
-    inherited Create(ed.Text);
-    fEditor := ed;
+    inherited Create(editor.Text);
+    e := editor;
 end;
 
 procedure TDebugGutter.AfterPaint(ACanvas: TCanvas; const AClip: TRect; FirstLine, LastLine: integer);
 begin
-    fEditor.DrawGutterImages(ACanvas, AClip, FirstLine, LastLine);
+    e.DebugAfterPaint(ACanvas, AClip, FirstLine, LastLine);
 end;
 
 procedure TDebugGutter.LinesInserted(FirstLine, Count: integer);
+var
+    I: integer;
+    bp: PBreakPoint;
 begin
+    for I := 0 to MainForm.fDebugger.BreakPointList.Count - 1 do begin
+        bp := PBreakPoint(MainForm.fDebugger.BreakPointList.Items[I]);
+        if (integer(bp^.editor) = integer(e)) and (bp^.line >= FirstLine) then
+            Inc(bp^.line, Count);
+    end;
 end;
 
 procedure TDebugGutter.LinesDeleted(FirstLine, Count: integer);
+var
+    I: integer;
+    bp: PBreakPoint;
 begin
+    for I := MainForm.fDebugger.BreakPointList.Count - 1 downto 0 do begin
+        bp := PBreakPoint(MainForm.fDebugger.BreakPointList.Items[I]);
+        if (integer(bp^.editor) = integer(e)) and (bp^.line >= FirstLine) then
+            if (bp^.line >= FirstLine + Count) then
+                Dec(bp^.line, Count)
+            else
+                e.ToggleBreakPoint(bp^.line); // remove breakpoints INSIDE deleted selection
+    end;
 end;
 
 { TEditor }
@@ -203,12 +226,13 @@ begin
     if DoOpen then begin
         fText.Lines.LoadFromFile(FileName);
         fNew := False;
+
+        // Save main.cpp as main.123456789.cpp
         if devData.Backups then begin
-            s := ExtractfileExt(FileName);
-            Insert('~', s, Pos('.', s) + 1);
-            Delete(s, Length(s) - 1, 1);
+            s := '.' + IntToStr(DateTimeToUnix(Now)) + ExtractFileExt(FileName);
             fText.Lines.SaveToFile(ChangeFileExt(FileName, s));
         end;
+
     end else
         fNew := True;
 
@@ -288,12 +312,19 @@ begin
     // Delete breakpoints in this editor
     MainForm.fDebugger.DeleteBreakPointsOf(self);
 
+    SendMessage(MainForm.Handle, WM_SETREDRAW, 0, 0);
+
     // Open up the previous tab, not the first one...
     with fTabSheet.PageControl do begin
-        curactive := MainForm.PageControl.ActivePageIndex;
-        fTabSheet.Free; // resets activepageindex to 0...
+        curactive := ActivePageIndex;
+        fTabSheet.Free; // sets activepageindex to 0, causes lots of flicker???
         ActivePageIndex := max(0, curactive - 1);
     end;
+
+    SendMessage(MainForm.Handle, WM_SETREDRAW, 1, 0);
+
+    // Repaint!
+    RedrawWindow(MainForm.PageControl.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE or RDW_ALLCHILDREN);
 
     inherited;
 end;
@@ -371,7 +402,7 @@ begin
     end;
 end;
 
-procedure TEditor.DrawGutterImages(ACanvas: TCanvas; AClip: TRect; FirstLine, LastLine: integer);
+procedure TEditor.DebugAfterPaint(ACanvas: TCanvas; AClip: TRect; FirstLine, LastLine: integer);
 var
     X, Y, I: integer;
 begin
@@ -480,9 +511,15 @@ begin
     if scSelection in Changes then begin
         MainForm.SetStatusbarLineCol;
 
+        // Decrement character completion counter
+        WaitForParenths := max(0, WaitForParenths - 1);
+        WaitForArray := max(0, WaitForArray - 1);
+        WaitForCurly := max(0, WaitForCurly - 1);
+
         // Reset mouseover timer if caret changes
         fAllowMouseOver := false;
 
+        // Update the function tip
         if Assigned(fFunctionTipTimer) then begin
             if fFunctionTip.Activated and FunctionTipAllowed then
                 fFunctionTip.Show
@@ -563,17 +600,12 @@ begin
 end;
 
 procedure TEditor.GotoLine;
-var
-    GotoForm: TGotoLineForm;
 begin
-    GotoForm := TGotoLineForm.Create(nil);
-    try
-        if GotoForm.ShowModal = mrOK then
-            fText.CaretXY := BufferCoord(1, Min(GotoForm.Line.Value, fText.Lines.Count));
-
-        Activate;
+    with TGotoLineForm.Create(nil) do try
+        if ShowModal = mrOK then
+            SetCaretPos(Line.Value, 1);
     finally
-        GotoForm.Close;
+        Free;
     end;
 end;
 
@@ -583,6 +615,9 @@ var
     Char, Line, I: integer;
     P: PAnsiChar;
 begin
+    // prevent lots of repaints
+    fText.BeginUpdate;
+
     NewCursorPos := fText.CaretXY;
     if MoveCursor then begin
         P := PAnsiChar(value);
@@ -612,6 +647,9 @@ begin
     // Update the cursor
     fText.CaretXY := NewCursorPos;
     fText.EnsureCursorPosVisible; // not needed?
+
+    // prevent lots of repaints
+    fText.EndUpdate;
 end;
 
 procedure TEditor.SetErrorFocus(Col, Line: integer);
@@ -627,7 +665,7 @@ begin
     fErrorLine := Line;
 
     // Set new error focus
-    fText.CaretXY := BufferCoord(Col, fErrorLine);
+    SetCaretPos(fErrorLine, col, false);
     fText.EnsureCursorPosVisible;
 
     // Redraw new error line
@@ -647,7 +685,7 @@ begin
 
         fActiveLine := Line;
 
-        fText.CaretXY := BufferCoord(1, fActiveLine);
+        SetCaretPos(fActiveLine, 1, false);
         fText.EnsureCursorPosVisible;
 
         // Invalidate new active line
@@ -674,10 +712,9 @@ end;
 
 procedure TEditor.SetFileName(const value: AnsiString);
 begin
-    if value <> fFileName then
-    begin
-        ffileName := value;
-        UpdateCaption(ExtractfileName(fFileName));
+    if value <> fFileName then begin
+        fFileName := value;
+        UpdateCaption(ExtractFileName(fFileName));
     end;
 end;
 
@@ -696,10 +733,25 @@ begin
     end;
 end;
 
-procedure TEditor.GotoLineNr(Nr: integer);
+procedure TEditor.SetCaretPos(line, col: integer; settopline: boolean = true);
+var
+    fold: TSynEditFoldRange;
+    collapsedline: integer;
 begin
-    fText.CaretXY := BufferCoord(1, Nr);
-    fText.TopLine := Nr;
+    // Open up the closed folds around the focused line until we can see the line we're looking for
+    repeat
+        fold := fText.CollapsedFoldAroundLine(line);
+        if Assigned(fold) then
+            fText.Uncollapse(fold);
+    until not Assigned(fold);
+
+    collapsedline := fText.UncollapsedLineToLine(line);
+
+    fText.CaretXY := BufferCoord(col, collapsedline);
+
+    if settopline then
+        fText.TopLine := collapsedline;
+
     Activate;
 end;
 
@@ -718,21 +770,19 @@ begin
                         fCompletionBox.Search(nil, CompletionPhrase(fText.CaretXY), fFileName);
                     end;
                 end;
-            Char(VK_RETURN): begin
+
+            // We have finished making a selection
+            Char(VK_RETURN), ';', '(', #9, #32: begin
                     SetEditorText(Key);
                     fCompletionBox.Hide;
                 end;
+
+            // Abort, don't insert anything
             Char(VK_ESCAPE): begin
                     fCompletionBox.Hide;
                 end;
-            ';', '(', ' ': begin
-                    SetEditorText(Key);
-                    fCompletionBox.Hide;
-                end;
-            '.', '>', ':': begin
-                    SetEditorText(Key);
-                    fCompletionBox.Search(nil, CompletionPhrase(fText.CaretXY), fFileName);
-                end;
+
+            // Continue filtering
         else begin
                 fText.SelText := Key;
                 fCompletionBox.Search(nil, CompletionPhrase(fText.CaretXY), fFileName);
@@ -765,28 +815,28 @@ begin
             // Check if we typed anything completable...
             if (Key = '(') and devEditor.ParentheseComplete then begin
                 InsertString(')', false);
-                HasCompletedParentheses := 2;
+                WaitForParenths := 2;
 
                 // immediately activate function hint
                 if FunctionTipAllowed then
                     fFunctionTip.Activated := true;
-            end else if (Key = ')') and (HasCompletedParentheses > 0) then begin
+            end else if (Key = ')') and (WaitForParenths > 0) then begin
                 fText.CaretXY := BufferCoord(fText.CaretX + 1, fText.CaretY);
-                HasCompletedParentheses := 0;
+                WaitForParenths := 0;
                 Key := #0;
             end else if (Key = '[') and devEditor.ArrayComplete then begin
                 InsertString(']', false);
-                HasCompletedArray := 2;
-            end else if (Key = ']') and (HasCompletedArray > 0) then begin
+                WaitForArray := 2;
+            end else if (Key = ']') and (WaitForArray > 0) then begin
                 fText.CaretXY := BufferCoord(fText.CaretX + 1, fText.CaretY);
-                HasCompletedArray := 0;
+                WaitForArray := 0;
                 Key := #0;
             end else if (Key = '*') and devEditor.CommentComplete then begin
                 if (fText.CaretX > 1) and (fText.LineText[fText.CaretX - 1] = '/') then
                     InsertString('*/', false);
             end else if (Key = '{') and devEditor.BraceComplete then begin
 
-                s1 := fText.LineText;
+                s1 := Copy(fText.LineText, 1, fText.CaretX - 1);
                 s2 := Trim(s1);
 
                 if EndsStr(')', s2) or
@@ -795,6 +845,7 @@ begin
                     EndsStr('catch', s2) or
                     EndsStr('default', s2) or
                     EndsStr('do', s2) or
+                    StartsStr('default', s2) or
                     SameStr('', s2) then begin
 
                     // Copy indentation
@@ -842,12 +893,12 @@ begin
                     fText.CaretXY := BufferCoord(fText.CaretX + 1, fText.CaretY);
                     Key := #0;
                 end else begin
-                    HasCompletedCurly := 2;
+                    WaitForCurly := 2;
                     InsertString('}', false);
                 end;
-            end else if (Key = '}') and (HasCompletedCurly > 0) then begin
+            end else if (Key = '}') and (WaitForCurly > 0) then begin
                 fText.CaretXY := BufferCoord(fText.CaretX + 1, fText.CaretY);
-                HasCompletedCurly := 0;
+                WaitForCurly := 2;
                 Key := #0;
             end else if (Key = '<') and devEditor.IncludeComplete then begin
                 if StartsStr('#include', fText.LineText) then
@@ -855,7 +906,15 @@ begin
             end else if (Key = '"') and devEditor.IncludeComplete then begin
                 if StartsStr('#include', fText.LineText) then
                     InsertString('"', false);
+            end else begin
+                WaitForParenths := 0;
+                WaitForArray := 0;
+                WaitForCurly := 0;
             end;
+        end else begin
+            WaitForParenths := 0;
+            WaitForArray := 0;
+            WaitForCurly := 0;
         end;
     end;
 
@@ -864,8 +923,8 @@ begin
         // Use a timer to show the completion window when we just typed a few parent-member linking chars
         case Key of
             '.': fCompletionTimer.Enabled := True;
-            '>': if (fText.CaretX > 1) and (fText.LineText[fText.CaretX - 1] = '-') then fCompletionTimer.Enabled := True;
-            ':': if (fText.CaretX > 1) and (fText.LineText[fText.CaretX - 1] = ':') then fCompletionTimer.Enabled := True;
+            '>': if (fText.CaretX > 1) and (Length(fText.LineText) > 1) and (fText.LineText[fText.CaretX - 1] = '-') then fCompletionTimer.Enabled := True;
+            ':': if (fText.CaretX > 1) and (Length(fText.LineText) > 1) and (fText.LineText[fText.CaretX - 1] = ':') then fCompletionTimer.Enabled := True;
             ' ': begin
 
                     // If Ctrl is down, immediately show completionbox when space is hit
@@ -881,7 +940,8 @@ begin
                         // Force show
                         fCompletionTimer.OnTimer(nil);
                     end;
-                end;
+                end else
+            fCompletionTimer.Enabled := False;
         end;
 
         if fCompletionTimer.Enabled then begin
@@ -894,45 +954,19 @@ end;
 
 procedure TEditor.EditorKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
-    P: TBufferCoord;
-    s: AnsiString;
-    attr: TSynHighlighterAttributes;
+    p: TBufferCoord;
 begin
-    // Allow the user to overwrite ending symbols
-    if devEditor.CompleteSymbols then begin
-        if not (ssShift in Shift) then begin
-            Dec(HasCompletedParentheses);
-            Dec(HasCompletedArray);
-            Dec(HasCompletedCurly);
-        end;
-    end;
-
-    // Disable completion when user has continued typing
-    if fCompletionBox.Enabled then
-        fCompletionTimer.Enabled := False;
-
     // Update the cursor if it is hovering above a keyword and ctrl is pressed
-    if (ssCtrl in Shift) and fText.GetPositionOfMouse(p) and fAllowMouseOver then begin
-
-        // Only show info about variables or includes
-        if fText.GetHighlighterAttriAtRowCol(p, s, attr) then
-            if not (attr = fText.Highlighter.IdentifierAttribute) and not (SameStr(attr.Name, 'Preprocessor')) then
-                Exit;
-
-        if (fText.GetWordAtRowCol(p) <> '') then begin
-
-            // Handle Ctrl+Click too
-            if ssCtrl in Shift then
-                fText.Cursor := crHandPoint
-            else
-                fText.Cursor := crIBeam;
-        end;
-    end;
+    if (Key = VK_CONTROL) and HandpointAllowed(p) then
+        fText.Cursor := crHandPoint
+    else
+        fText.Cursor := crIBeam;
 end;
 
 procedure TEditor.EditorKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-    fText.Cursor := crIBeam;
+    if (Key = VK_CONTROL) then
+        fText.Cursor := crIBeam;
 end;
 
 procedure TEditor.CompletionTimer(Sender: TObject);
@@ -943,6 +977,7 @@ var
 begin
     fCompletionTimer.Enabled := False;
 
+    // Don't bother scanning inside strings or comments
     if (fText.GetHighlighterAttriAtRowCol(BufferCoord(fText.CaretX - 1, fText.CaretY), s, attr)) then
         if (attr = fText.Highlighter.StringAttribute) or (attr = fText.Highlighter.CommentAttribute) then
             Exit;
@@ -951,6 +986,12 @@ begin
 
     M := TMemoryStream.Create;
     try
+
+        // Scan the file and corresponding header, ignore function bodies
+        //if fText.Modified then
+        //	MainForm.CppParser.ReParseFile(fFileName,InProject);
+
+        // Scan the current function
         fText.UnCollapsedLines.SaveToStream(M);
         fCompletionBox.CurrentClass := MainForm.CppParser.FindAndScanBlockAt(fFileName, fText.CaretY, M);
     finally
@@ -1111,49 +1152,41 @@ var
     FuncAddOn: AnsiString;
 begin
     Statement := fCompletionBox.SelectedStatement;
+    if not Assigned(Statement) then Exit;
+
+    // if we are inserting a function,
     if fCompletionBox.SelectedIsFunction then begin
-        if Key = ';' then
-            FuncAddOn := '();'
-        else if Key = '.' then
-            FuncAddOn := '().'
-        else if Key = '>' then
-            FuncAddOn := '()->'
-        else
-            FuncAddOn := '()';
-    end else begin
-        {$IFDEF WIN32}
-        if Key = Char(VK_RETURN) then
-            {$ENDIF}
-            {$IFDEF LINUX}
-            if Key = Char(XK_RETURN) then
-                {$ENDIF}
-                FuncAddOn := ''
-            else if Key = '>' then
-                FuncAddOn := '->'
-            else if Key = ':' then
-                FuncAddOn := '::'
+
+        // If they argument list is already there, don't add another ()
+        if fText.LineText[fText.WordEnd.Char] <> '(' then begin
+            if Key = ';' then
+                FuncAddOn := '();'
             else
-                FuncAddOn := Key;
-    end;
+                FuncAddOn := '()';
+        end else
+            FuncAddOn := '';
+    end else
+        FuncAddOn := '';
 
-    if Assigned(Statement) then begin
-        // delete selections made
-        fText.SelText := '';
+    // delete selections made
+    fText.SelText := '';
 
-        // delete the part of the word that's already been typed
-        fText.SelStart := fText.RowColToCharIndex(fText.WordStart);
-        fText.SelEnd := fText.RowColToCharIndex(fText.WordEnd);
+    // delete the part of the word that's already been typed ...
+    fText.SelStart := fText.RowColToCharIndex(fText.WordStart);
+    fText.SelEnd := fText.RowColToCharIndex(fText.WordEnd);
 
-        // replace the selection
-        fText.SelText := Statement^._ScopelessCmd + FuncAddOn;
+    // ... by replacing the selection
+    fText.SelText := Statement^._ScopelessCmd + FuncAddOn;
 
-        // if we added "()" move caret inside parenthesis
-        // only if Key<>'.' and Key<>'>'
-        // and function takes arguments...
-        if (not (Key in ['.', '>'])) and (FuncAddOn <> '') and ((Length(Statement^._Args) > 2) or (Statement^._Args = '()')) then begin
-            fText.CaretX := fText.CaretX - Length(FuncAddOn) + 1;
-            if FunctionTipAllowed then
-                fFunctionTip.Show;
+    // Move caret inside the ()'s, only when the user has something to do there...
+    if (FuncAddOn <> '') and (Statement^._Args <> '()') and (Statement^._Args <> '(void)') then begin
+
+        fText.CaretX := fText.CaretX - Length(FuncAddOn) + 1;
+
+        // immediately activate function hint
+        if devEditor.ShowFunctionTip and Assigned(fText.Highlighter) then begin
+            fText.SetFocus;
+            fFunctionTip.Show;
         end;
     end;
 end;
@@ -1162,7 +1195,6 @@ procedure TEditor.EditorMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Int
 var
     s: AnsiString;
     p: TBufferCoord;
-    attr: TSynHighlighterAttributes;
     st: PStatement;
     M: TMemoryStream;
 
@@ -1176,33 +1208,22 @@ var
     end;
 begin
 
-    TabSheet.PageControl.Hint := '';
+    fTabSheet.PageControl.Hint := '';
 
     // If the mouse can be found INSIDE the window
-    if fText.GetPositionOfMouse(p) and fAllowMouseOver then begin
-
-        // Only show info about variables and preprocessor stuff
-        if fText.GetHighlighterAttriAtRowCol(p, s, attr) then
-            if not (attr = fText.Highlighter.IdentifierAttribute) and not SameStr(attr.Name, 'Preprocessor') then begin
-                CancelHint;
-                Exit;
-            end;
+    if HandpointAllowed(p) then begin
 
         s := fText.GetWordAtRowCol(p);
-
-        if Length(s) = 0 then begin
-            CancelHint;
-            Exit;
-        end;
 
         // Don't rescan the same stuff over and over again (that's slow)
         if (s <> fCurrentWord) then begin
 
             // Different word? Cancel old now incorrect hint
-            CancelHint;
+            MainForm.fDebugger.OnEvalReady := nil;
+            Application.CancelHint;
             fCurrentWord := s;
 
-            // Cursor hovering above an identifier? Allow handpoint cursor
+            // Cursor hovering above an identifier or preprocessor? Allow handpoint cursor
             if (ssCtrl in Shift) then
                 fText.Cursor := crHandPoint
             else
@@ -1221,8 +1242,9 @@ begin
                 MainForm.fDebugger.SendCommand('print', fCurrentEvalWord);
 
                 // Otherwise, parse code and show information about variable
-            end else if devEditor.ParserHints then begin
+            end else if devEditor.ParserHints and fText.Focused then begin
 
+                // This piece of code changes the parser database, possibly making hints and code completion invalid...
                 M := TMemoryStream.Create;
                 try
                     fText.UnCollapsedLines.SaveToStream(M);
@@ -1238,7 +1260,8 @@ begin
                     fText.Hint := '';
             end;
         end;
-    end;
+    end else
+        CancelHint;
 end;
 
 procedure TEditor.IndentSelection;
@@ -1444,12 +1467,12 @@ begin
                 walker := 0;
                 repeat
                     Inc(walker);
-                until line[walker] in ['<', '"'];
+                until (walker = Length(line)) or (line[walker] in ['<', '"']);
                 start := walker + 1;
 
                 repeat
                     Inc(walker);
-                until line[walker] in ['>', '"'];
+                until (walker = Length(line)) or (line[walker] in ['>', '"']);
 
                 headername := Copy(line, start, walker - start);
 
@@ -1466,10 +1489,9 @@ begin
                 // refer to the editor of the filename (will open if needed and made active)
                 e := MainForm.GetEditorFromFileName(fname);
                 if Assigned(e) then
-                    e.GotoLineNr(1);
-            end;
-
-            MainForm.actGotoImplDeclEditorExecute(self);
+                    e.SetCaretPos(1, 1);
+            end else
+                MainForm.actGotoImplDeclEditorExecute(self);
         end;
     end;
 end;
@@ -1531,11 +1553,26 @@ begin
         PaintMatchingBrackets(TransientType);
 end;
 
-// Editor needs to be told when class browser has been recreated otherwise AV !
-
-procedure TEditor.UpdateParser;
+procedure TEditor.SetTabIndex(index: integer);
 begin
-    fFunctionTip.Parser := MainForm.CppParser;
+    fTabSheet.PageIndex := index;
+end;
+
+function TEditor.HandpointAllowed(var mousepos: TBufferCoord): boolean;
+var
+    s: AnsiString;
+    HLAttr: TSynHighlighterAttributes;
+begin
+    if fText.GetPositionOfMouse(mousepos) and fAllowMouseOver then begin
+        fText.GetHighlighterAttriAtRowCol(mousepos, s, HLAttr);
+
+        // Only allow identifiers and preprocessor stuff
+        if (HLAttr = fText.Highlighter.IdentifierAttribute) or (Assigned(HLAttr) and SameStr(HLAttr.Name, 'Preprocessor')) then
+            result := true
+        else
+            result := false;
+    end else
+        result := false;
 end;
 
 end.

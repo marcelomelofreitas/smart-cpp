@@ -142,7 +142,7 @@ type
         cbTrimTrailingSpaces: TCheckBox;
         ScrollHint: TLabel;
         tabAutosave: TTabSheet;
-        EnableDisableAutosave: TCheckBox;
+        cbAutoSave: TCheckBox;
         OptionsGroup: TGroupBox;
         SaveInterval: TLabel;
         MinutesDelay: TTrackBar;
@@ -167,6 +167,7 @@ type
         cbHighlightColor: TLabel;
         cbDefaultCode: TCheckBox;
         seDefault: TSynEdit;
+        NameOptions: TRadioGroup;
         procedure FormCreate(Sender: TObject);
         procedure SetGutter;
         procedure ElementListClick(Sender: TObject);
@@ -206,7 +207,7 @@ type
         procedure chkCBShowInheritedClick(Sender: TObject);
         procedure OnGutterClick(Sender: TObject; Button: TMouseButton; X, Y, Line: Integer; Mark: TSynEditMark);
         procedure cbHighCurrLineClick(Sender: TObject);
-        procedure EnableDisableAutosaveClick(Sender: TObject);
+        procedure cbAutoSaveClick(Sender: TObject);
         procedure MinutesDelayChange(Sender: TObject);
         procedure cbSymbolCompleteClick(Sender: TObject);
         procedure cboEditorFontDrawItem(Control: TWinControl; Index: Integer;
@@ -381,7 +382,8 @@ begin
     Font.Name := devData.InterfaceFont;
     Font.Size := devData.InterfaceFontSize;
 
-    SaveInterval.Caption := '保存间隔: ' + IntToStr(MinutesDelay.Position) + ' 分钟';
+    SaveInterval.Caption := '间隔: ' + IntToStr(MinutesDelay.Position) + ' 分钟';
+    lblCompletionDelay.Caption := '延时: ' + IntToStr(tbCompletionDelay.Position) + ' 毫秒';
 end;
 
 procedure TEditorOptForm.LoadSampleText;
@@ -389,25 +391,21 @@ begin
     CppEdit.Lines.BeginUpdate;
     with cppEdit.Lines do begin
         Add('#include <iostream>');
-        Add('using namespace std;');
+        Add('#include <conio.h>');
         Add('');
-        Add('int main(int argc, char *argv[])');
+        Add('int main(int argc, char **argv)');
         Add('{');
         Add('	int numbers[20];');
         Add('	float average, total; //breakpoint');
-        Add('	for (int i = 0; i <= 19; ++ i)');
+        Add('	for (int i = 0; i <= 19; i++)');
         Add('	{ // active breakpoint');
-        Add('		numbers[i] = i;');                       
+        Add('		numbers[i] = i;');
         Add('		Total += i; // error line');
         Add('	}');
         Add('	average = total / 20;');
-        Add('	if (average > 1.0)');
-        Add('	{');
-        Add('		cout << "great!" << endl;');
-        Add('	}');
-        Add('	cout << numbers[0] << endl << numbers[19] << endl;');
+        Add('	cout << numbers[0] << "\n" << numbers[19] << "\n";');
         Add('	cout << "total: " << total << "\nAverage: " << average;');
-        Add('	return 0;');
+        Add('	getch();');
         Add('}');
     end;
     CppEdit.Lines.EndUpdate;
@@ -420,7 +418,6 @@ var
     a, idx: integer;
 begin
     with devEditor do begin
-
         cboEditorFont.ItemIndex := cboEditorFont.Items.IndexOf(Font.Name);
         edEditorSize.Value := Font.Size;
 
@@ -588,14 +585,15 @@ begin
 
     // Autosave
     MinutesDelay.Position := devEditor.Interval;
-    FileOptions.ItemIndex := devEditor.SaveType;
-    EnableDisableAutosave.Checked := devEditor.EnableAutoSave;
+    FileOptions.ItemIndex := devEditor.AutoSaveFilter;
+    NameOptions.ItemIndex := devEditor.AutoSaveMode;
+    cbAutoSave.Checked := devEditor.EnableAutoSave;
 
-    MinutesDelay.Enabled := EnableDisableAutosave.Checked;
-    SaveInterval.Enabled := EnableDisableAutosave.Checked;
-    FileOptions.Enabled := EnableDisableAutosave.Checked;
-    OptionsGroup.Enabled := EnableDisableAutosave.Checked;
-    FileOptions.Enabled := EnableDisableAutosave.Checked;
+    MinutesDelay.Enabled := cbAutoSave.Checked;
+    SaveInterval.Enabled := cbAutoSave.Checked;
+    FileOptions.Enabled := cbAutoSave.Checked;
+    OptionsGroup.Enabled := cbAutoSave.Checked;
+    NameOptions.Enabled := cbAutoSave.Checked;
 
     SetGutter;
 end;
@@ -744,12 +742,29 @@ begin
     devClassBrowsing.ShowInheritedMembers := chkCBShowInherited.Checked;
 
     // Autosave
+    devEditor.EnableAutoSave := cbAutoSave.Checked;
     devEditor.Interval := MinutesDelay.Position;
-    devEditor.SaveType := FileOptions.ItemIndex;
-    devEditor.EnableAutoSave := EnableDisableAutosave.Checked;
+    devEditor.AutoSaveFilter := FileOptions.ItemIndex;
+    devEditor.AutoSaveMode := NameOptions.ItemIndex;
 
-    MainForm.AutoSaveTimer.Interval := devEditor.Interval * 60 * 1000;
-    MainForm.AutoSaveTimer.Enabled := devEditor.EnableAutoSave;
+    // Properly configure the timer object
+    if not devEditor.EnableAutoSave then begin
+
+        // Delete the timer when we don't need it anymore
+        if Assigned(MainForm.AutoSaveTimer) then
+            FreeAndNil(MainForm.AutoSaveTimer);
+
+    end else begin
+
+        // Create the timer when we changed the enable option
+        if not Assigned(MainForm.AutoSaveTimer) then
+            MainForm.AutoSaveTimer := TTImer.Create(Self);
+
+        // And set corresponding options
+        MainForm.AutoSaveTimer.Interval := devEditor.Interval * 60 * 1000; // miliseconds to minutes
+        MainForm.AutoSaveTimer.Enabled := devEditor.EnableAutoSave;
+        MainForm.AutoSaveTimer.OnTimer := MainForm.EditorSaveTimer;
+    end;
 
     SaveOptions;
     dmMain.LoadDataMod;
@@ -761,6 +776,7 @@ begin
         if not devEditor.Match then
             e.PaintMatchingBrackets(ttBefore);
 
+        // Repaint highlighted line
         if cbHighCurrLine.Checked then
             e.Text.ActiveLineColor := cpHighColor.SelectionColor
         else
@@ -1064,8 +1080,6 @@ begin
         attr := TSynHighlighterAttributes.Create(cpp.Attribute[i].Name);
         try
             StrtoAttr(Attr, LoadStr(i + offset + 1));
-            //MessageDlg(Attr.Name, mtWarning, [mbOK], 0);
-            //MessageDlg(LoadStr(i + offset + 1), mtWarning, [mbOK], 0);
             cpp.Attribute[i].Assign(Attr);
         finally
             Attr.Free;
@@ -1403,14 +1417,22 @@ begin
     with dmMain do begin
         BuildFilter(flt, [FLT_HEADS]);
         OpenDialog.Filter := flt;
+
         if OpenDialog.Execute then begin
             Screen.Cursor := crHourglass;
             Application.ProcessMessages;
+
             for I := 0 to OpenDialog.Files.Count - 1 do
                 CppParser.AddFileToScan(OpenDialog.Files[I]);
             CppParser.ParseList;
             CppParser.Save(devDirs.Config + DEV_COMPLETION_CACHE, devDirs.Exec);
-            lbCCC.Items.Assign(CppParser.CacheContents);
+
+            lbCCC.Items.BeginUpdate;
+            lbCCC.Clear;
+            for I := 0 to CppParser.CacheContents.Count - 1 do
+                lbCCC.Items.Add(ReplaceFirststr(CppParser.CacheContents[i], devDirs.Exec, '.\'));
+            lbCCC.Items.EndUpdate;
+
             Screen.Cursor := crDefault;
             chkCCCache.Tag := 1; // mark modified
         end;
@@ -1418,11 +1440,15 @@ begin
 end;
 
 procedure TEditorOptForm.btnCCCdeleteClick(Sender: TObject);
+var
+    I: integer;
 begin
     if lbCCC.Items.Count = 0 then
         Exit;
+
     if MessageDlg('Are you sure you want to clear the cache?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then begin
         DeleteFile(devDirs.Config + DEV_COMPLETION_CACHE);
+
         FreeAndNil(CppParser);
         CppParser := TCppParser.Create(Self);
         CppParser.Tokenizer := CppTokenizer;
@@ -1431,17 +1457,32 @@ begin
         CppParser.OnStartParsing := CppParser1StartParsing;
         CppParser.OnEndParsing := CppParser1EndParsing;
         CppParser.OnTotalProgress := CppParser1TotalProgress;
-        lbCCC.Items.Assign(CppParser.CacheContents);
+
+        lbCCC.Items.BeginUpdate;
+        lbCCC.Clear;
+        for I := 0 to CppParser.CacheContents.Count - 1 do
+            lbCCC.Items.Add(ReplaceFirststr(CppParser.CacheContents[i], devDirs.Exec, '.\'));
+        lbCCC.Items.EndUpdate;
+
         chkCCCache.Tag := 1; // mark modified
     end;
 end;
 
 procedure TEditorOptForm.FillCCC;
+var
+    I: integer;
 begin
     Screen.Cursor := crHourglass;
     Application.ProcessMessages;
+
     CppParser.Load(devDirs.Config + DEV_COMPLETION_CACHE, devDirs.Exec);
-    lbCCC.Items.Assign(CppParser.CacheContents);
+
+    lbCCC.Items.BeginUpdate;
+    lbCCC.Clear;
+    for I := 0 to CppParser.CacheContents.Count - 1 do
+        lbCCC.Items.Add(ReplaceFirststr(CppParser.CacheContents[i], devDirs.Exec, '.\'));
+    lbCCC.Items.EndUpdate;
+
     Screen.Cursor := crDefault;
 end;
 
@@ -1503,13 +1544,13 @@ begin
     cpHighColor.Enabled := cbHighCurrLine.Checked;
 end;
 
-procedure TEditorOptForm.EnableDisableAutosaveClick(Sender: TObject);
+procedure TEditorOptForm.cbAutoSaveClick(Sender: TObject);
 begin
-    MinutesDelay.Enabled := EnableDisableAutosave.Checked;
-    SaveInterval.Enabled := EnableDisableAutosave.Checked;
-    FileOptions.Enabled := EnableDisableAutosave.Checked;
-    OptionsGroup.Enabled := EnableDisableAutosave.Checked;
-    FileOptions.Enabled := EnableDisableAutosave.Checked;
+    MinutesDelay.Enabled := cbAutoSave.Checked;
+    SaveInterval.Enabled := cbAutoSave.Checked;
+    FileOptions.Enabled := cbAutoSave.Checked;
+    OptionsGroup.Enabled := cbAutoSave.Checked;
+    NameOptions.Enabled := cbAutoSave.Checked;
 end;
 
 procedure TEditorOptForm.MinutesDelayChange(Sender: TObject);

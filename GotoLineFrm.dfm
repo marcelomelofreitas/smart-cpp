@@ -19,6 +19,7 @@ object GotoLineForm: TGotoLineForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnKeyUp = FormKeyUp
+  OnKeyPress = FormKeyPress
   PixelsPerInch = 96
   TextHeight = 15
   object GotoLabel: TLabel

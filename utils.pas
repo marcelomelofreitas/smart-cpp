@@ -860,7 +860,7 @@ begin
         result := utcppSrc
     else if AnsiMatchText(ext, ['.h']) then
         result := utcHead
-    else if AnsiMatchText(ext, ['.h', '.hpp', '.rh', '.hh', '.hxx']) then
+    else if AnsiMatchText(ext, ['.hpp', '.rh', '.hh', '.hxx']) then
         result := utcppHead
     else if AnsiMatchText(ext, ['.res', '.rc']) then
         result := utresSrc
