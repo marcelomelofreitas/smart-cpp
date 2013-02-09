@@ -32,8 +32,8 @@ const
 
     // exe properties
     DEVCPP = 'Smart-C++';
-    DEVCPP_VERSION = '1.0.0.22';
-    DEVCPP_BUILDTIME = 'January 3 2013';
+    DEVCPP_VERSION = '1.1.0.34';
+    DEVCPP_BUILDTIME = 'January 31 2013';
 
     // delimiters
     DEV_INTERNAL_OPEN = '$__DEV_INTERNAL_OPEN';
