@@ -51,7 +51,6 @@ type
         MenuImages_Gnome: TImageList;
         HelpImages_Gnome: TImageList;
         Res: TSynRCSyn;
-        MenuImages_NewLook: TImageList;
         ProjectImage_NewLook: TImageList;
         HelpImages_NewLook: TImageList;
         SpecialImages_Gnome: TImageList;
@@ -63,6 +62,7 @@ type
         Specialimages_Blue: TImageList;
         ResourceDialog: TOpenDialog;
         ClassImages: TImageList;
+    MenuImages_NewLook: TImageList;
         procedure DataModuleCreate(Sender: TObject);
         procedure DataModuleDestroy(Sender: TObject);
     private

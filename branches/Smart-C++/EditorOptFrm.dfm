@@ -573,9 +573,9 @@ object EditorOptForm: TEditorOptForm
       object lblSpeed: TLabel
         Left = 9
         Top = 336
-        Width = 75
+        Width = 99
         Height = 15
-        Caption = #36873#25321#39044#32622#20027#39064':'
+        Caption = #24555#36895#36873#25321#39044#32622#20027#39064':'
       end
       object btnSaveSyntax: TSpeedButton
         Left = 8
@@ -725,7 +725,7 @@ object EditorOptForm: TEditorOptForm
       end
       object cboQuickColor: TComboBox
         Left = 32
-        Top = 356
+        Top = 359
         Width = 117
         Height = 23
         Style = csDropDownList
@@ -733,16 +733,11 @@ object EditorOptForm: TEditorOptForm
         TabOrder = 1
         OnSelect = cboQuickColorSelect
         Items.Strings = (
-          'Classic'
-          'Classic Plus'
-          'Twilight'
-          'Ocean'
+          #24576#26087#32463#20856
+          #28145#36995#22812#26202
+          'Notepad++'
           'Visual Studio'
-          'Borland'
-          'Matrix'
-          'Obsidian'
-          'GSS Hacker'
-          'Obvilion')
+          'Borland Delphi')
       end
       object edSyntaxExt: TEdit
         Left = 168

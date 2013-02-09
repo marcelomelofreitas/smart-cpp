@@ -863,7 +863,6 @@ type
         procedure FormActivate(Sender: TObject);
         procedure ANSIA1Click(Sender: TObject);
         procedure JavaJ1Click(Sender: TObject);
-        procedure E1Click(Sender: TObject);
         procedure O1Click(Sender: TObject);
     private
         fPreviousHeight: integer; // stores MessageControl height to be able to restore to previous height
@@ -6137,8 +6136,8 @@ procedure TMainForm.ANSIA1Click(Sender: TObject);
 begin
     SaveFile(GetEditor);
     devExecutor.ExecuteAndWatch(devDirs.Exec + 'AStyle',
-        '--style=ansi --indent=spaces=4 -f -p -U ' +
-        GetEditor.FileName,
+        '--style=ansi --indent=spaces=4 -f -p -U "' +
+        GetEditor.FileName + '"',
         ExtractFileDir(Application.ExeName),
         True, INFINITE, RunDeleteOriginalSourceCode);
 
@@ -6159,19 +6158,10 @@ procedure TMainForm.JavaJ1Click(Sender: TObject);
 begin
     SaveFile(GetEditor);
     devExecutor.ExecuteAndWatch(devDirs.Exec + 'AStyle',
-        '--style=java --indent=spaces=4 -f -p -U ' +
-        GetEditor.FileName,
+        '--style=java --indent=spaces=4 -f -p -U "' +
+        GetEditor.FileName + '"',
         ExtractFileDir(Application.ExeName),
         True, INFINITE, RunDeleteOriginalSourceCode);
-end;
-
-procedure TMainForm.E1Click(Sender: TObject);
-begin
-    dlgOpenDialog.Filter := 'ZIP Package|*.zip';
-    dlgOpenDialog.Title := '打开 Smart-C++ 设置备份文件';
-    if dlgOpenDialog.Execute then begin
-
-    end;
 end;
 
 procedure TMainForm.O1Click(Sender: TObject);

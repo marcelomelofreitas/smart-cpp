@@ -22,7 +22,7 @@ unit AboutFrm;
 interface
 
 uses
-    Messages, Variants, jpeg, CnWaterEffect, Math,
+    Messages, Variants, jpeg, Math,
     {$IFDEF WIN32}
     Windows, SysUtils, Classes, version, Graphics, Controls, Forms, Dialogs,
     StdCtrls, Buttons, ExtCtrls;
@@ -40,14 +40,12 @@ type
         GroupBox1: TGroupBox;
         LicenseText: TMemo;
         GroupBox2: TGroupBox;
-        BloodLabel: TLabel;
+    OrwellLabel: TLabel;
         BloodSite: TLabel;
         MingwLabel: TLabel;
         MingwSite: TLabel;
         ForumLabel: TLabel;
         ForumSite: TLabel;
-        eMailLabel: TLabel;
-        eMailSite: TLabel;
         BlogLabel: TLabel;
         BlogSite: TLabel;
         btnAuthors: TBitBtn;
@@ -57,7 +55,6 @@ type
         Image1: TImage;
         Bevel1: TBevel;
         BuildTimeLabel: TLabel;
-        TimerWaterEffect: TTimer;
 
         procedure LabelClick(Sender: TObject);
         procedure FormCreate(Sender: TObject);
@@ -68,12 +65,7 @@ type
         procedure Timer1Timer(Sender: TObject);
         procedure FishImageClick(Sender: TObject);
         procedure FormClose(Sender: TObject; var Action: TCloseAction);
-        procedure FormDestroy(Sender: TObject);
-        procedure Image1MouseMove(Sender: TObject; Shift: TShiftState; X,
-            Y: Integer);
-        procedure TimerWaterEffectTimer(Sender: TObject);
     private
-        Water: TCnWaterEffect;
         procedure LoadText;
     end;
 
@@ -112,28 +104,29 @@ procedure TAboutForm.FormCreate(Sender: TObject);
 begin
     LoadText;
     VersionLabel.Caption := VersionLabel.Caption + DEVCPP_VERSION;
-    BuildTimeLabel.Caption := 'Build time: ' + DEVCPP_BUILDTIME;
-    Water := TCnWaterEffect.Create;
-    Water.SetSize(Image1.Picture.Bitmap.Width, Image1.Picture.Bitmap.Height);
-    if FileExists(devData.Splash) then
-        Image1.Picture.LoadFromFile(devData.Splash);
+    BuildTimeLabel.Caption := '编译时间: ' + DEVCPP_BUILDTIME;
 end;
 
 procedure TAboutForm.btnAuthorsClick(Sender: TObject);
 const MessageText =
-    '作者: '#13#10#13#10 +
+        '-------------------------------------------------'#13#10 +
+        '          Dev-C++ Development Team'#13#10 +
+        '-------------------------------------------------'#13#10 +
         '- Development: Colin Laplace, Mike Berg, Hongli Lai, Yiannis Mandravellos'#13#10 +
         '- Contributors: Peter Schraut, Marek Januszewski, Anonymous'#13#10 +
         '- MinGW compiler system: Mumit Khan, J.J. Var Der Heidjen, Colin Hendrix and GNU developers'#13#10 +
-        '- Splash screen and association icons: Matthijs Crielaard: '#13#10 +
+        '- Splash screen and association icons: Matthijs Crielaard'#13#10 +
         '- New Look theme: Gerard Caulfield'#13#10 +
         '- Gnome icons: Gnome designers'#13#10 +
         '- Blue theme: Thomas Thron'#13#10 +
-        '- Post-4.9.9.2 development: Johan Mes'#13#10#13#10 +
-        '- Smart-C++: Mr.SXKDZ';
+        '- Post-4.9.9.2 development: Johan Mes'#13#10 +
+        '-------------------------------------------------'#13#10 +
+        '         Smart-C++ Development Team'#13#10 +
+        '-------------------------------------------------'#13#10 +
+        '- Development: SXKDZ'#13#10 +
+        '- Theme and logo: Michael.Zlies';
 begin
-    MessageBeep($F);
-    MessageDlg(MessageText, MtInformation, [MbOK], 0);
+    MessageBox(Handle, PChar(MessageText), 'Smart-C++ 作者', MB_OK + MB_ICONINFORMATION);
 end;
 
 procedure TAboutForm.btnUpdateCheckClick(Sender: TObject);
@@ -177,29 +170,6 @@ end;
 procedure TAboutForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
     Action := caFree;
-end;
-
-procedure TAboutForm.FormDestroy(Sender: TObject);
-begin
-    Water.Free;
-end;
-
-procedure TAboutForm.Image1MouseMove(Sender: TObject; Shift: TShiftState;
-    X, Y: Integer);
-begin
-    if ssLeft in Shift then
-        Water.Blob(X, Y, 1, 60)
-    else
-        Water.Blob(X, Y, 1, 30);
-end;
-
-procedure TAboutForm.TimerWaterEffectTimer(Sender: TObject);
-begin
-    if Random(8) = 1 then
-        Water.Blob(-1, -1, 1, RandomRange(10, 600));
-    Water.Render(Image1.Picture.Bitmap, Image1.Picture.Bitmap);
-    //DoubleBuffered := true;
-    Image1.Repaint;
 end;
 
 end.
