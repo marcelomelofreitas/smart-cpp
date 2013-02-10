@@ -1,6 +1,6 @@
 object EnviroForm: TEnviroForm
-  Left = 562
-  Top = 122
+  Left = 528
+  Top = 317
   BorderStyle = bsDialog
   Caption = #29615#22659#36873#39033
   ClientHeight = 462
@@ -32,6 +32,23 @@ object EnviroForm: TEnviroForm
     ModalResult = 1
     TabOrder = 1
     OnClick = btnOkClick
+    Glyph.Data = {
+      DE010000424DDE01000000000000760000002800000024000000120000000100
+      0400000000006801000000000000000000001000000000000000000000000000
+      80000080000000808000800000008000800080800000C0C0C000808080000000
+      FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333333
+      3333333333333333333333330000333333333333333333333333F33333333333
+      00003333344333333333333333388F3333333333000033334224333333333333
+      338338F3333333330000333422224333333333333833338F3333333300003342
+      222224333333333383333338F3333333000034222A22224333333338F338F333
+      8F33333300003222A3A2224333333338F3838F338F33333300003A2A333A2224
+      33333338F83338F338F33333000033A33333A222433333338333338F338F3333
+      0000333333333A222433333333333338F338F33300003333333333A222433333
+      333333338F338F33000033333333333A222433333333333338F338F300003333
+      33333333A222433333333333338F338F00003333333333333A22433333333333
+      3338F38F000033333333333333A223333333333333338F830000333333333333
+      333A333333333333333338330000333333333333333333333333333333333333
+      0000}
     NumGlyphs = 2
   end
   object btnCancel: TBitBtn
@@ -40,11 +57,8 @@ object EnviroForm: TEnviroForm
     Width = 85
     Height = 25
     Anchors = [akRight, akBottom]
-    Cancel = True
-    Caption = #21462#28040'(&C)'
-    ModalResult = 2
     TabOrder = 2
-    NumGlyphs = 2
+    Kind = bkCancel
   end
   object btnHelp: TBitBtn
     Left = 390
@@ -52,11 +66,10 @@ object EnviroForm: TEnviroForm
     Width = 85
     Height = 25
     Anchors = [akRight, akBottom]
-    Caption = #24110#21161'(&H)'
     Enabled = False
     TabOrder = 0
     OnClick = btnHelpClick
-    NumGlyphs = 2
+    Kind = bkHelp
   end
   object PagesMain: TPageControl
     Left = 0
@@ -248,6 +261,24 @@ object EnviroForm: TEnviroForm
           #24038#20391
           #21491#20391)
       end
+      object cboLang: TComboBox
+        Left = 302
+        Top = 128
+        Width = 160
+        Height = 23
+        Style = csDropDownList
+        ItemHeight = 15
+        TabOrder = 15
+      end
+      object cboTheme: TComboBox
+        Left = 302
+        Top = 176
+        Width = 160
+        Height = 23
+        Style = csDropDownList
+        ItemHeight = 15
+        TabOrder = 16
+      end
       object cbUIfont: TComboBox
         Left = 256
         Top = 158
@@ -292,6 +323,14 @@ object EnviroForm: TEnviroForm
         Height = 17
         Caption = #31243#24207#36816#34892#26102#33258#21160#26242#20572#25511#21046#21488#31243#24207
         TabOrder = 14
+      end
+      object cbCheckAssocs: TCheckBox
+        Left = 16
+        Top = 188
+        Width = 265
+        Height = 17
+        Caption = 'Check file associations on startup'
+        TabOrder = 17
       end
     end
     object tabPaths: TTabSheet

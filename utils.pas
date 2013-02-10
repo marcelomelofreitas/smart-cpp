@@ -23,8 +23,8 @@ interface
 
 uses
     {$IFDEF WIN32}
-    Windows, Classes, Sysutils, Forms, ShellAPI, Dialogs, SynEdit, SynEditHighlighter,
-    Menus, Registry, ComCtrls;
+    Windows, Classes, Sysutils, Dateutils, Forms, ShellAPI, Dialogs, SynEdit, SynEditHighlighter,
+    Menus, Registry, Controls, ComCtrls;
 {$ENDIF}
 {$IFDEF LINUX}
 Classes, Sysutils, QForms, QDialogs, QSynEditHighlighter,
@@ -45,7 +45,7 @@ type
         utOther // any others
         );
 
-    TFilterSet = (ftOpen, ftHelp, ftPrj, ftSrc, ftAll);
+    TFilterSet = (ftOpen, ftPrj, ftSrc, ftAll);
 
     TErrFunc = procedure(const Msg: AnsiString) of object;
     TLineOutputFunc = procedure(const Line: AnsiString) of object;
@@ -59,20 +59,19 @@ function RunAndGetOutput(const Cmd, WorkDir: AnsiString; ErrFunc: TErrFunc; Line
 function GetShortName(const FileName: AnsiString): AnsiString;
 
 function CommaStrToStr(s: AnsiString; formatstr: AnsiString): AnsiString;
-function IncludeQuoteIfSpaces(s: AnsiString): AnsiString;
-function IncludeQuoteIfNeeded(s: AnsiString): AnsiString;
+function IncludeQuoteIfSpaces(const s: AnsiString): AnsiString;
+function IncludeQuoteIfNeeded(const s: AnsiString): AnsiString;
 
-procedure MsgErr(const text: AnsiString; const caption: AnsiString = '错误');
-procedure MsgBox(const text: AnsiString; const caption: AnsiString = '信息'); overload;
-procedure MsgBox(textlist: TStrings; const caption: AnsiString = '信息'); overload;
-procedure MsgBox(text: integer; const caption: AnsiString = '信息'); overload;
+procedure MsgErr(const text: AnsiString; const caption: AnsiString = 'Error');
+procedure MsgBox(const text: AnsiString; const caption: AnsiString = 'Message'); overload;
+procedure MsgBox(textlist: TStrings; const caption: AnsiString = 'Message'); overload;
+procedure MsgBox(text: integer; const caption: AnsiString = 'Message'); overload;
 
 procedure LoadFilefromResource(const FileName: AnsiString; ms: TMemoryStream);
 
 function ValidateFile(const FileName: AnsiString; const WorkPath: AnsiString; const CheckDirs: boolean = FALSE): AnsiString;
 
-function BuildFilter(var value: AnsiString; const Filters: TFilterSet): boolean; overload;
-function BuildFilter(var value: AnsiString; const Filters: array of AnsiString): boolean; overload;
+function BuildFilter(const Filters: array of AnsiString): AnsiString;
 
 function CodeInstoStr(const s: AnsiString): AnsiString;
 function StrtoCodeIns(const s: AnsiString): AnsiString;
@@ -83,8 +82,8 @@ function AttrtoStr(Attr: TSynHighlighterAttributes): AnsiString;
 procedure StrtoPoint(var pt: TPoint; const value: AnsiString);
 function PointtoStr(pt: TPoint): AnsiString;
 
-function ListtoStr(List: TStrings): AnsiString;
-procedure StrtoList(s: AnsiString; List: TStrings; delimiter: char = ';');
+function ListToStr(List: TStrings): AnsiString;
+procedure StrToList(const s: AnsiString; List: TStrings; delimiter: char = ';');
 
 function GetFileTyp(const FileName: AnsiString): TExUnitType;
 
@@ -93,15 +92,18 @@ function ExpandFileto(const FileName, BasePath: AnsiString): AnsiString;
 function FileSamePath(const FileName, TestPath: AnsiString): boolean;
 procedure CloneMenu(FromMenu, ToMenu: TMenuItem);
 
-function GetLastPos(const SubStr, S: AnsiString): integer;
+function FindComplement(const s: AnsiString; fromtoken, totoken: char; var curpos: integer; increment: integer): boolean;
+
+function FPos(const SubStr, S: AnsiString; start: integer): integer;
+
+function RPos(const SubStr, S: AnsiString): integer; overload;
+function RPos(const SubStr, S: AnsiString; start: integer): integer; overload;
 
 function GenMakePath1(const FileName: AnsiString): AnsiString;
 function GenMakePath2(const FileName: AnsiString): AnsiString;
 function GenMakePath(const FileName: AnsiString; EscapeSpaces, EncloseInQuotes: Boolean): AnsiString; overload;
 
 function GetRealPath(const BrokenFileName: AnsiString; const Directory: AnsiString = ''): AnsiString;
-
-function CalcMod(Count: Integer): Integer;
 
 function GetVersionString(const FileName: AnsiString): AnsiString;
 
@@ -116,6 +118,8 @@ function CountChar(const s: AnsiString; c: Char): integer;
 procedure OpenHelpFile;
 
 function ProgramHasConsole(const path: AnsiString): boolean;
+
+function GetBuildTime(const path: AnsiString): TDateTime;
 
 function IsEmpty(editor: TSynEdit): boolean;
 
@@ -335,7 +339,7 @@ var
     Offset: Integer;
 begin
 
-    Offset := GetLastPos(OldPattern, S);
+    Offset := RPos(OldPattern, S);
     if Offset = 0 then begin
         Result := S;
     end else begin
@@ -353,7 +357,7 @@ begin
     UpperS := UpperCase(S);
     UpperOldPattern := UpperCase(OldPattern);
 
-    Offset := GetLastPos(UpperOldPattern, UpperS);
+    Offset := RPos(UpperOldPattern, UpperS);
     if Offset = 0 then begin
         Result := S;
     end else begin
@@ -383,6 +387,30 @@ begin
         Result := (opt_header.Subsystem = IMAGE_SUBSYSTEM_WINDOWS_CUI);
     end else
         Result := false;
+
+    CloseHandle(handle);
+end;
+
+// Delphi 7 doesn't write the PE header correctly, so we can't use this to create the timestamp...
+
+function GetBuildTime(const path: AnsiString): TDateTime;
+var
+    handle: Cardinal;
+    bytesread: DWORD;
+    signature: DWORD;
+    dos_header: _IMAGE_DOS_HEADER;
+    pe_header: _IMAGE_FILE_HEADER;
+begin
+    handle := CreateFile(PAnsiChar(path), GENERIC_READ, FILE_SHARE_READ, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    if handle <> INVALID_HANDLE_VALUE then begin
+        ReadFile(Handle, dos_header, sizeof(dos_header), bytesread, nil);
+        SetFilePointer(Handle, dos_header._lfanew, nil, 0);
+        ReadFile(Handle, signature, sizeof(signature), bytesread, nil);
+        ReadFile(Handle, pe_header, sizeof(pe_header), bytesread, nil);
+
+        Result := UnixToDateTime(pe_header.TimeDateStamp);
+    end else
+        Result := 0;
 
     CloseHandle(handle);
 end;
@@ -675,52 +703,20 @@ begin
     result := strpas(pFileName);
 end;
 
-function AddFilter(var value: AnsiString; const _Filter: AnsiString): boolean;
-var
-    idx: integer;
-    s, LFilter: AnsiString;
-begin
-    result := TRUE;
-    try
-        LFilter := value;
-        idx := pos('|', LFilter);
-        if idx > 0 then begin
-            Insert(_Filter + '|', LFilter, Pos(FLT_ALLFILES, LFIlter));
-            s := Copy(_Filter, Pos('|', _Filter) + 1, length(_Filter)) + ';';
-            Insert(s, LFilter, Pos('|', LFilter) + 1);
-            if LFilter[Length(LFilter)] <> '|' then
-                LFilter := LFilter + '|';
-        end;
-        value := LFilter;
-    except
-        result := FALSE;
-    end;
-end;
-
-function BuildFilter(var value: AnsiString; const Filters: TFilterSet): boolean; overload;
-begin
-    value := FLT_BASE + FLT_ALLFILES;
-    case Filters of
-        ftOpen: result := BuildFilter(value, [FLT_PROJECTS, FLT_HEADS, FLT_CS, FLT_CPPS, FLT_RES]);
-        ftHelp: result := BuildFilter(value, [FLT_HELPS]);
-        ftPrj: result := BuildFilter(value, [FLT_PROJECTS]);
-        ftSrc: result := BuildFilter(value, [FLT_HEADS, FLT_RES, FLT_CS, FLT_CPPS]);
-        ftAll: result := BuildFilter(value, [FLT_PROJECTS, FLT_HEADS, FLT_RES, FLT_CS, FLT_CPPS]);
-    else
-        result := TRUE;
-    end;
-end;
-
-function BuildFilter(var value: AnsiString; const Filters: array of AnsiString): boolean; overload;
+function BuildFilter(const Filters: array of AnsiString): AnsiString;
 var
     I: integer;
 begin
-    result := FALSE;
-    value := FLT_BASE + FLT_ALLFILES;
-    for I := 0 to high(Filters) do
-        if not AddFilter(value, Filters[I]) then
-            exit;
-    result := TRUE;
+    result := FLT_ALLFILES;
+    for I := 0 to high(Filters) do begin
+
+        // Check a few things:
+        // 1) result must end with | before appending
+        if result[Length(result)] <> '|' then
+            result := result + '|';
+
+        result := result + Filters[I];
+    end;
 end;
 
 function CodeInstoStr(const s: AnsiString): AnsiString;
@@ -814,29 +810,18 @@ begin
         result := format(formatstr, [result, s]);
 end;
 
-procedure StrtoList(s: AnsiString; List: TStrings; delimiter: char);
-var
-    tmp: AnsiString;
-    i: integer;
+// fix without using StringList.DelimitedText:
+// http://stackoverflow.com/questions/1335027/delphi-stringlist-delimiter-is-always-a-space-character-even-if-delimiter-is-se
+
+procedure StrToList(const s: AnsiString; List: TStrings; delimiter: char);
 begin
-    List.BeginUpdate;
-    try
-        List.Clear;
-        while pos(delimiter, s) > 0 do begin
-            i := pos(delimiter, s);
-            tmp := Copy(s, 1, i - 1);
-            Delete(s, 1, i);
-            List.Add(tmp);
-        end;
-        if s <> '' then
-            List.Add(s);
-    finally
-        List.EndUpdate;
-    end;
+    List.Clear;
+    ExtractStrings([delimiter], [], PChar(S), List);
 end;
 
 function ListtoStr(List: TStrings): AnsiString;
-var i: integer;
+var
+    i: integer;
 begin
     result := '';
     for i := 0 to List.Count - 1 do begin
@@ -860,7 +845,7 @@ begin
         result := utcppSrc
     else if AnsiMatchText(ext, ['.h']) then
         result := utcHead
-    else if AnsiMatchText(ext, ['.hpp', '.rh', '.hh', '.hxx']) then
+    else if AnsiMatchText(ext, ['.hpp', '.rh', '.hh', '.hxx', '.inl']) then
         result := utcppHead
     else if AnsiMatchText(ext, ['.res', '.rc']) then
         result := utresSrc
@@ -927,25 +912,73 @@ begin
     ToMenu.Visible := FromMenu.Visible;
 end;
 
-function GetLastPos(const SubStr, s: AnsiString): integer;
+function FPos(const SubStr, S: AnsiString; start: integer): integer;
 var
-    Last,
-        Current: PAnsiChar;
+    i: Integer;
+    pStr: PChar;
+    pSub: PChar;
 begin
-    result := 0;
-    Last := nil;
-    Current := PAnsiChar(s);
-    while (Current <> nil) and (Current^ <> #0) do
-    begin
-        Current := AnsiStrPos(PAnsiChar(Current), PAnsiChar(SubStr));
-        if Current <> nil then
-        begin
-            Last := Current;
-            inc(Current, length(SubStr));
+    pSub := Pointer(SubStr);
+
+    for i := start to Length(s) do begin
+        pStr := @(s[i]);
+        if (pStr^ = pSub^) then begin // compare char
+            if CompareMem(pSub, pStr, Length(SubStr)) then begin // then compare whole string
+                result := i;
+                exit;
+            end;
         end;
     end;
-    if Last <> nil then
-        result := abs((longint(PAnsiChar(s)) - longint(Last)) div sizeof(AnsiChar)) + 1;
+
+    result := 0;
+end;
+
+function RPos(const SubStr, s: AnsiString): integer;
+begin
+    result := RPos(SubStr, s, Length(s) - Length(SubStr) + 1);
+end;
+
+function RPos(const SubStr, S: AnsiString; start: integer): integer;
+var
+    i: Integer;
+    pStr: PChar;
+    pSub: PChar;
+begin
+    pSub := Pointer(SubStr);
+
+    for i := start downto 1 do begin
+        pStr := @(s[i]);
+        if (pStr^ = pSub^) then begin // compare char
+            if CompareMem(pSub, pStr, Length(SubStr)) then begin // then compare whole string
+                result := i;
+                exit;
+            end;
+        end;
+    end;
+
+    result := 0;
+end;
+
+function FindComplement(const s: AnsiString; fromtoken, totoken: char; var curpos: integer; increment: integer): boolean;
+var
+    level, curposbackup: integer;
+begin
+    curposbackup := curpos;
+    level := 0;
+    while (curpos <= Length(s)) and (curpos > 0) do begin
+        if (s[curpos] = fromtoken) then begin
+            Inc(level);
+        end else if (s[curpos] = totoken) then begin
+            Dec(level);
+            if level = 0 then begin
+                Result := true;
+                Exit;
+            end;
+        end;
+        Inc(curpos, increment);
+    end;
+    curpos := curposbackup;
+    Result := false;
 end;
 
 { GenMakePath: convert a filename to a format that can be used by make }
@@ -1021,29 +1054,7 @@ begin
     {$ENDIF}
 end;
 
-function CalcMod(Count: Integer): Integer;
-begin
-    if Count <= 15 then
-        Result := 0
-    else if Count <= 30 then
-        Result := 2
-    else if Count <= 65 then
-        Result := 4
-    else if Count <= 150 then
-        Result := 8
-    else if Count <= 300 then
-        Result := 16
-    else if Count <= 500 then
-        Result := 32
-    else if Count <= 750 then
-        Result := 64
-    else if Count <= 1500 then
-        Result := 96
-    else
-        Result := 128;
-end;
-
-function IncludeQuoteIfSpaces(s: AnsiString): AnsiString;
+function IncludeQuoteIfSpaces(const s: AnsiString): AnsiString;
 begin
     if pos(' ', s) > 0 then
         result := '"' + s + '"'
@@ -1051,7 +1062,7 @@ begin
         result := s;
 end;
 
-function IncludeQuoteIfNeeded(s: AnsiString): AnsiString;
+function IncludeQuoteIfNeeded(const s: AnsiString): AnsiString;
 begin
     if pos('"', s) = 0 then
         result := '"' + s + '"'

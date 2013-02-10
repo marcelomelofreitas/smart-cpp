@@ -26,7 +26,7 @@ uses
     Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
     Dialogs, ComCtrls, StdCtrls, ExtCtrls, Spin, ColorPickerButton,
     SynEdit, SynEditHighlighter, SynHighlighterCpp,
-    Buttons, ClassBrowser, CppParser, CppTokenizer, StrUtils;
+    Buttons, ClassBrowser, CppParser, CppTokenizer, StrUtils, Grids;
 {$ENDIF}
 {$IFDEF LINUX}
 SysUtils, Variants, Classes, QGraphics, QControls, QForms,
@@ -84,41 +84,26 @@ type
         tabCPInserts: TTabSheet;
         tabCPDefault: TTabSheet;
         btnAdd: TButton;
-        btnEdit: TButton;
         btnRemove: TButton;
-        lvCodeins: TListView;
         btnOk: TBitBtn;
         btnCancel: TBitBtn;
         btnHelp: TBitBtn;
         cboQuickColor: TComboBox;
         lblSpeed: TLabel;
         CodeIns: TSynEdit;
-        tabClassBrowsing: TTabSheet;
-        chkEnableClassBrowser: TCheckBox;
         btnSaveSyntax: TSpeedButton;
-        ClassCodePage: TPageControl;
-        tabCBBrowser: TTabSheet;
         tabCBCompletion: TTabSheet;
-        lblClassBrowserSample: TLabel;
-        ClassBrowser: TClassBrowser;
-        gbCBEngine: TGroupBox;
-        chkCBParseGlobalH: TCheckBox;
-        chkCBParseLocalH: TCheckBox;
-        gbCBView: TGroupBox;
         lblCompletionDelay: TLabel;
         cpCompletionBackground: TColorPickerButton;
         lblCompletionColor: TLabel;
         tbCompletionDelay: TTrackBar;
         chkEnableCompletion: TCheckBox;
-        chkCBUseColors: TCheckBox;
         chkCCCache: TCheckBox;
         btnCCCnew: TSpeedButton;
         btnCCCdelete: TSpeedButton;
-        CppTokenizer: TCppTokenizer;
         CppParser: TCppParser;
         lbCCC: TListBox;
         pbCCCache: TProgressBar;
-        chkCBShowInherited: TCheckBox;
         cbMatch: TCheckBox;
         grpEditorOpts: TGroupBox;
         edMarginWidth: TSpinEdit;
@@ -168,6 +153,13 @@ type
         cbDefaultCode: TCheckBox;
         seDefault: TSynEdit;
         NameOptions: TRadioGroup;
+        lvCodeIns: TStringGrid;
+        gbCBEngine: TGroupBox;
+        chkCBParseGlobalH: TCheckBox;
+        chkCBParseLocalH: TCheckBox;
+        lblTimeStampExample: TLabel;
+        btnCCCrefresh: TButton;
+        lblRefreshHint: TLabel;
         procedure FormCreate(Sender: TObject);
         procedure SetGutter;
         procedure ElementListClick(Sender: TObject);
@@ -181,30 +173,22 @@ type
         procedure cbSyntaxHighlightClick(Sender: TObject);
         procedure cbGutterFntClick(Sender: TObject);
         procedure btnAddClick(Sender: TObject);
-        procedure btnEditClick(Sender: TObject);
         procedure btnRemoveClick(Sender: TObject);
         procedure btnHelpClick(Sender: TObject);
         procedure btnOkClick(Sender: TObject);
         procedure btnCancelClick(Sender: TObject);
-        procedure lvCodeinsColumnClick(Sender: TObject; Column: TListColumn);
-        procedure lvCodeinsCompare(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
-        procedure lvCodeinsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
         procedure CodeInsStatusChange(Sender: TObject; Changes: TSynStatusChanges);
         procedure cboQuickColorSelect(Sender: TObject);
         procedure CppEditSpecialLineColors(Sender: TObject; Line: Integer; var Special: Boolean; var FG, BG: TColor);
         procedure tbCompletionDelayChange(Sender: TObject);
         procedure chkEnableCompletionClick(Sender: TObject);
-        procedure chkEnableClassBrowserClick(Sender: TObject);
         procedure btnSaveSyntaxClick(Sender: TObject);
-        procedure chkCBUseColorsClick(Sender: TObject);
         procedure btnCCCnewClick(Sender: TObject);
         procedure btnCCCdeleteClick(Sender: TObject);
         procedure chkCCCacheClick(Sender: TObject);
         procedure CppParser1StartParsing(Sender: TObject);
         procedure CppParser1EndParsing(Sender: TObject);
         procedure CppParser1TotalProgress(Sender: TObject; const FileName: string; Total, Current: Integer);
-        procedure ClassCodePageChange(Sender: TObject);
-        procedure chkCBShowInheritedClick(Sender: TObject);
         procedure OnGutterClick(Sender: TObject; Button: TMouseButton; X, Y, Line: Integer; Mark: TSynEditMark);
         procedure cbHighCurrLineClick(Sender: TObject);
         procedure cbAutoSaveClick(Sender: TObject);
@@ -219,11 +203,16 @@ type
         procedure cboEditorFontChange(Sender: TObject);
         procedure cpHighColorDefaultSelect(Sender: TObject);
         procedure cpHighColorHint(Sender: TObject; Cell: Integer; var Hint: string);
+        procedure FormClose(Sender: TObject; var Action: TCloseAction);
+        procedure lvCodeInsSelectCell(Sender: TObject; ACol, ARow: Integer;
+            var CanSelect: Boolean);
+        procedure PagesMainChange(Sender: TObject);
+        procedure NameOptionsClick(Sender: TObject);
+        procedure btnCCCrefreshClick(Sender: TObject);
     private
         ffgColor: TColor;
         fbgColor: TColor;
         fUpdate: boolean;
-
         fGutColor: TPoint;
         fBPColor: TPoint;
         fErrColor: TPoint;
@@ -234,9 +223,10 @@ type
         procedure LoadFonts;
         procedure LoadText;
         procedure LoadCodeIns;
+        procedure SaveCodeIns;
+        procedure ClearCodeIns;
         procedure LoadSampleText;
         procedure GetOptions;
-        procedure SaveCodeIns;
         procedure UpdateCIButtons;
         procedure LoadSyntax(const Value: AnsiString);
         procedure FillSyntaxSets;
@@ -247,7 +237,7 @@ implementation
 
 uses
     {$IFDEF WIN32}
-    shlobj, MultiLangSupport, devcfg, version, utils, CodeInsFrm, datamod, IniFiles, editor,
+    shlobj, MultiLangSupport, devcfg, version, utils, math, CommCtrl, DateUtils, CodeInsList, datamod, IniFiles, editor,
     main;
 {$ENDIF}
 {$IFDEF LINUX}
@@ -268,7 +258,7 @@ procedure TEditorOptForm.FormCreate(Sender: TObject);
 begin
     LoadText;
 
-    // Make editors look a similar to main ones
+    // Make editors look similar to main ones
     CppEdit.Font.Assign(devEditor.Font);
     CodeIns.Font.Assign(devEditor.Font);
     seDefault.Font.Assign(devEditor.Font);
@@ -384,6 +374,11 @@ begin
 
     SaveInterval.Caption := '¼ä¸ô: ' + IntToStr(MinutesDelay.Position) + ' ·ÖÖÓ';
     lblCompletionDelay.Caption := 'ÑÓÊ±: ' + IntToStr(tbCompletionDelay.Position) + ' ºÁÃë';
+
+
+    tbCompletionDelayChange(nil);
+    MinutesDelayChange(nil);
+    NameOptionsClick(nil);
 end;
 
 procedure TEditorOptForm.LoadSampleText;
@@ -547,11 +542,10 @@ begin
         ElementListClick(nil);
     end;
 
-    if FileExists(devDirs.Config + DEV_DEFAULTCODE_FILE) then begin
+    if FileExists(devDirs.Config + DEV_DEFAULTCODE_FILE) then
         seDefault.Lines.LoadFromFile(devDirs.Config + DEV_DEFAULTCODE_FILE);
-    end;
 
-    // CODE_COMPLETION
+    // Code completion
     chkEnableCompletion.OnClick := nil;
     chkEnableCompletion.Checked := devCodeCompletion.Enabled;
     chkEnableCompletion.OnClick := chkEnableCompletionClick;
@@ -566,22 +560,9 @@ begin
     btnCCCnew.Enabled := chkCCCache.Checked and chkEnableCompletion.Checked;
     btnCCCdelete.Enabled := chkCCCache.Checked and chkEnableCompletion.Checked;
 
-    // Class browsing
-    chkEnableClassBrowser.Checked := devClassBrowsing.Enabled;
-    ClassBrowser.Enabled := chkEnableClassBrowser.Checked;
-    ClassBrowser.UseColors := devClassBrowsing.UseColors;
-    ClassBrowser.ShowInheritedMembers := devClassBrowsing.ShowInheritedMembers;
-    ClassBrowser.ShowSampleData; // Class browsing page preview
-    chkCBParseLocalH.Checked := devClassBrowsing.ParseLocalHeaders;
-    chkCBParseGlobalH.Checked := devClassBrowsing.ParseGlobalHeaders;
-    chkCBParseLocalH.Enabled := chkEnableClassBrowser.Checked;
-    chkCBParseGlobalH.Enabled := chkEnableClassBrowser.Checked;
-    chkCBUseColors.Checked := devClassBrowsing.UseColors;
-    chkCBShowInherited.Checked := devClassBrowsing.ShowInheritedMembers;
-    chkCBUseColors.Enabled := chkEnableClassBrowser.Checked;
-    chkEnableCompletion.Enabled := chkEnableClassBrowser.Checked;
-    tbCompletionDelay.Enabled := chkEnableClassBrowser.Checked;
-    cpCompletionBackground.Enabled := chkEnableClassBrowser.Checked;
+    // Parser options
+    chkCBParseLocalH.Checked := devCodeCompletion.ParseLocalHeaders;
+    chkCBParseGlobalH.Checked := devCodeCompletion.ParseGlobalHeaders;
 
     // Autosave
     MinutesDelay.Position := devEditor.Interval;
@@ -589,11 +570,7 @@ begin
     NameOptions.ItemIndex := devEditor.AutoSaveMode;
     cbAutoSave.Checked := devEditor.EnableAutoSave;
 
-    MinutesDelay.Enabled := cbAutoSave.Checked;
-    SaveInterval.Enabled := cbAutoSave.Checked;
-    FileOptions.Enabled := cbAutoSave.Checked;
-    OptionsGroup.Enabled := cbAutoSave.Checked;
-    NameOptions.Enabled := cbAutoSave.Checked;
+    cbAutoSaveClick(nil);
 
     SetGutter;
 end;
@@ -734,12 +711,8 @@ begin
     devCodeCompletion.Delay := tbCompletionDelay.Position;
     devCodeCompletion.BackColor := cpCompletionBackground.SelectionColor;
     devCodeCompletion.UseCacheFiles := chkCCCache.Checked;
-
-    devClassBrowsing.Enabled := chkEnableClassBrowser.Checked;
-    devClassBrowsing.ParseLocalHeaders := chkCBParseLocalH.Checked;
-    devClassBrowsing.ParseGlobalHeaders := chkCBParseGlobalH.Checked;
-    devClassBrowsing.UseColors := chkCBUseColors.Checked;
-    devClassBrowsing.ShowInheritedMembers := chkCBShowInherited.Checked;
+    devCodeCompletion.ParseLocalHeaders := chkCBParseLocalH.Checked;
+    devCodeCompletion.ParseGlobalHeaders := chkCBParseGlobalH.Checked;
 
     // Autosave
     devEditor.EnableAutoSave := cbAutoSave.Checked;
@@ -1101,146 +1074,143 @@ begin
     SetGutter;
 end;
 
-{ ---------- Code insert's methods ---------- }
+{ ---------- Code insert methods ---------- }
 
 procedure TEditorOptForm.btnAddClick(Sender: TObject);
-var
-    NewItem: PCodeIns;
-    Item: TListItem;
 begin
-    with TfrmCodeEdit.Create(Self) do
-    try
-        CodeIns.ClearAll;
-        Edit := FALSE;
-        New(NewItem);
-        NewItem^.Sep := 0;
-        Entry := NewItem;
-        if ShowModal = mrOk then begin
-            Item := lvCodeIns.Items.Add;
-            Item.Caption := edMenuText.Text;
-            Item.SubItems.Add(inttostr(seSection.Value));
-            Item.SubItems.Add(edDesc.Text);
-            Item.SubItems.Add('');
-            lvCodeIns.Selected := Item;
-        end else
-            dispose(NewItem);
-    finally
-        Free;
-        UpdateCIButtons;
-    end;
-end;
+    CodeIns.ClearAll;
 
-procedure TEditorOptForm.btnEditClick(Sender: TObject);
-begin
-    with TfrmCodeEdit.Create(Self) do
-    try
-        Edit := TRUE;
-        edMenuText.Text := lvCodeIns.Selected.Caption;
-        seSection.Value := strtoint(lvCodeIns.Selected.SubItems[0]);
-        edDesc.Text := lvCodeIns.Selected.SubItems[1];
-        if ShowModal = mrOk then
-        begin
-            lvCodeIns.Selected.Caption := edMenuText.Text;
-            lvCodeIns.Selected.SubItems[0] := inttostr(seSection.Value);
-            lvCodeIns.Selected.SubItems[1] := edDesc.Text;
-        end;
-    finally
-        Free;
-        UpdateCIButtons;
-    end;
+    lvCodeIns.RowCount := lvCodeIns.RowCount + 1; // add blank row
+
+    // Fill
+    lvCodeIns.Objects[0, lvCodeIns.RowCount - 1] := TStringList.Create;
+    lvCodeIns.Cells[0, lvCodeIns.RowCount - 1] := '';
+    lvCodeIns.Cells[1, lvCodeIns.RowCount - 1] := '';
+    lvCodeIns.Cells[2, lvCodeIns.RowCount - 1] := '';
+
+    lvCodeIns.Row := lvCodeIns.RowCount - 1; // set selection
+    lvCodeIns.Col := 0; // set selection
+    lvCodeIns.SetFocus;
+
+    UpdateCIButtons;
 end;
 
 procedure TEditorOptForm.btnRemoveClick(Sender: TObject);
+var
+    I: integer;
+    sl: TStringList;
 begin
-    dmMain.CodeInserts.Delete(lvCodeIns.Selected.Index);
-    lvCodeIns.Selected.Delete;
-    CodeIns.ClearAll;
-    UpdateCIButtons;
+    if (lvCodeIns.Row > 0) then begin
+        if (lvCodeIns.RowCount > 2) then begin // remove completely
+            dmMain.CodeInserts.Delete(lvCodeIns.Row);
+
+            // Delete object containing text too
+            TStringList(lvCodeIns.Objects[0, lvCodeIns.Row]).Free;
+            lvCodeIns.Objects[0, lvCodeIns.Row] := nil;
+
+            for I := lvCodeIns.Row to lvCodeins.RowCount - 2 do
+                lvCodeIns.Rows[i].Assign(lvCodeIns.Rows[i + 1]); // moves objects too
+
+            lvCodeIns.RowCount := lvCodeIns.RowCount - 1
+        end else begin // leave blank row
+            sl := TStringList(lvCodeIns.Objects[0, lvCodeIns.Row]); // grid (TStrings) deletes pointer when clearing row
+            sl.Clear;
+            lvCodeIns.Rows[lvCodeIns.RowCount - 1].Text := '';
+            lvCodeIns.Objects[0, lvCodeIns.Row] := sl;
+        end;
+
+        CodeIns.ClearAll;
+        UpdateCIButtons;
+    end;
 end;
 
 procedure TEditorOptForm.UpdateCIButtons;
 begin
-    btnAdd.Enabled := TRUE;
-    btnEdit.Enabled := assigned(lvCodeIns.Selected);
-    btnRemove.Enabled := assigned(lvCodeIns.Selected);
+    btnAdd.Enabled := true;
+    btnRemove.Enabled := lvCodeIns.Row > 0;
 end;
 
-procedure TEditorOptForm.lvCodeinsColumnClick(Sender: TObject;
-    Column: TListColumn);
-begin
-    lvCodeIns.AlphaSort;
-end;
-
-procedure TEditorOptForm.lvCodeinsCompare(Sender: TObject; Item1,
-    Item2: TListItem; Data: Integer; var Compare: Integer);
-var
-    i1, i2: integer;
-begin
-    i1 := strtoint(Item1.SubItems[0]);
-    i2 := strtoint(Item2.SubItems[0]);
-    if i1 > i2 then
-        Compare := 1
-    else
-        if i1 = i2 then
-            Compare := 0
-        else
-            Compare := -1;
-end;
-
-procedure TEditorOptForm.lvCodeinsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+procedure TEditorOptForm.lvCodeInsSelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
 begin
     Codeins.ClearAll;
-    CodeIns.Text := StrtoCodeIns(Item.SubItems[2]);
+    CodeIns.Text := StrToCodeIns(TStringList(lvCodeIns.Objects[0, ARow]).Text); // store code in first column object
     UpdateCIButtons;
 end;
 
 procedure TEditorOptForm.CodeInsStatusChange(Sender: TObject; Changes: TSynStatusChanges);
 begin
-    if assigned(lvCodeIns.Selected) then
+    if (lvCodeIns.Row > 0) then begin
         if (scModified in Changes) then begin
-            lvCodeIns.Selected.SubItems[2] := CodeInstoStr(CodeIns.Text);
+            TStringList(lvCodeIns.Objects[0, lvCodeIns.Row]).Text := CodeInstoStr(CodeIns.Text); // store text in hidden field
             CodeIns.Modified := false;
         end;
+    end;
 end;
 
 procedure TEditorOptForm.LoadCodeIns;
 var
-    idx: integer;
-    Item: TListItem;
-    Ins: PCodeIns;
+    ins: PCodeIns;
+    I: integer;
+    sl: TStringList;
+    select: boolean;
 begin
-    for idx := 0 to pred(dmMain.CodeInserts.Count) do begin
-        Item := lvCodeIns.Items.Add;
-        ins := dmMain.CodeInserts[idx];
-        Item.Caption := ins.Caption;
-        Item.SubItems.Add(inttostr(ins.Sep));
-        Item.SubItems.Add(ins.Desc);
-        Item.SubItems.Add(ins.Line);
+    lvCodeIns.RowCount := lvCodeIns.FixedRows;
+
+    for I := 0 to dmMain.CodeInserts.Count - 1 do begin
+        lvCodeIns.RowCount := lvCodeIns.RowCount + 1; // add blank row
+
+        // Don't forget to delete!
+        sl := TStringList.Create;
+
+        // Fill cols
+        ins := dmMain.CodeInserts[I];
+        sl.Text := ins^.Line;
+        lvCodeIns.Objects[0, lvCodeIns.RowCount - 1] := sl;
+        lvCodeIns.Cells[0, lvCodeIns.RowCount - 1] := ins^.Caption;
+        lvCodeIns.Cells[1, lvCodeIns.RowCount - 1] := IntToStr(ins^.Sep);
+        lvCodeIns.Cells[2, lvCodeIns.RowCount - 1] := ins^.Desc;
     end;
-    if lvCodeIns.Items.Count > 0 then
-        lvCodeIns.ItemIndex := 0;
+
+    lvCodeIns.FixedRows := 1; // gets reset to 0 when removing all editable rows
+
+    // Select first
+    lvCodeInsSelectCell(nil, 0, 1, select);
 end;
 
 procedure TEditorOptForm.SaveCodeIns;
 var
-    idx: integer;
+    I: integer;
     Item: PCodeIns;
 begin
-    lvCodeIns.AlphaSort;
-    for idx := 0 to dmMain.CodeInserts.Count - 1 do
-        Dispose(dmMain.CodeInserts.Items[idx]);
     dmMain.CodeInserts.Clear;
-    for idx := 0 to pred(lvCodeIns.Items.Count) do
-    begin
+    for I := 1 to lvCodeIns.RowCount - 1 do begin // ignore fixed row
         new(Item);
-        Item.Caption := lvCodeIns.Items[idx].Caption;
-        Item.Sep := strtoint(lvCodeIns.Items[idx].SubItems[0]);
-        Item.Desc := lvcodeIns.Items[idx].SubItems[1];
-        Item.Line := lvCodeIns.Items[idx].SubItems[2];
+
+        // Get snippet from attached object
+        Item.Caption := lvCodeIns.Cells[0, I];
+        Item.Sep := StrToIntDef(lvCodeIns.Cells[1, I], 0);
+        Item.Desc := lvCodeIns.Cells[2, I];
+        Item.Line := TStringList(lvCodeIns.Objects[0, I]).Text;
+
         dmMain.CodeInserts.AddItem(Item);
     end;
     dmMain.Codeinserts.SaveCode;
 end;
+
+procedure TEditorOptForm.ClearCodeIns;
+var
+    I: integer;
+begin
+    // Clear the code insertion string grid objects
+    for I := 1 to lvCodeIns.RowCount - 1 do begin
+        if Assigned(lvCodeIns.Objects[0, I]) then begin
+            TStringList(lvCodeIns.Objects[0, I]).Free;
+            lvCodeIns.Objects[0, I] := nil;
+        end;
+    end;
+end;
+
+{ ---------- Code completion ---------- }
 
 procedure TEditorOptForm.tbCompletionDelayChange(Sender: TObject);
 begin
@@ -1256,19 +1226,6 @@ begin
         chkCCCache.Enabled := Checked;
         chkCCCacheClick(Self);
     end;
-end;
-
-procedure TEditorOptForm.chkEnableClassBrowserClick(Sender: TObject);
-begin
-    // browser
-    ClassBrowser.Enabled := chkEnableClassBrowser.Checked;
-    chkCBParseLocalH.Enabled := chkEnableClassBrowser.Checked;
-    chkCBParseGlobalH.Enabled := chkEnableClassBrowser.Checked;
-    chkCBUseColors.Enabled := chkEnableClassBrowser.Checked;
-    // completion
-    chkEnableCompletion.Enabled := chkEnableClassBrowser.Checked;
-    tbCompletionDelay.Enabled := chkEnableClassBrowser.Checked;
-    cpCompletionBackground.Enabled := chkEnableClassBrowser.Checked;
 end;
 
 procedure TEditorOptForm.btnSaveSyntaxClick(Sender: TObject);
@@ -1364,19 +1321,12 @@ begin
         until FindNext(SR) <> 0;
 end;
 
-procedure TEditorOptForm.chkCBUseColorsClick(Sender: TObject);
-begin
-    ClassBrowser.UseColors := chkCBUseColors.Checked;
-    ClassBrowser.Refresh;
-end;
-
 procedure TEditorOptForm.btnCCCnewClick(Sender: TObject);
 var
     I, I1: integer;
     Hits: integer;
     MaxHits, MaxIndex: integer;
     sl: TStrings;
-    flt: AnsiString;
 begin
     // the following piece of code is a quick'n'dirty way to find the base
     // compiler's include dir (if we 're lucky).
@@ -1414,16 +1364,23 @@ begin
         sl.Free;
     end;
 
-    with dmMain do begin
-        BuildFilter(flt, [FLT_HEADS]);
-        OpenDialog.Filter := flt;
+    with TOpenDialog.Create(Self) do try
 
-        if OpenDialog.Execute then begin
+        Filter := BuildFilter([FLT_HEADS]);
+
+        // Start in the include folder, if its set
+        sl := TStringList.Create;
+        StrToList(devCompiler.CppDir, sl, ';');
+        if sl.count > 0 then
+            InitialDir := sl[0];
+        sl.Free;
+
+        if Execute then begin
             Screen.Cursor := crHourglass;
             Application.ProcessMessages;
 
-            for I := 0 to OpenDialog.Files.Count - 1 do
-                CppParser.AddFileToScan(OpenDialog.Files[I]);
+            for I := 0 to Files.Count - 1 do
+                CppParser.AddFileToScan(Files[I]);
             CppParser.ParseList;
             CppParser.Save(devDirs.Config + DEV_COMPLETION_CACHE, devDirs.Exec);
 
@@ -1436,35 +1393,64 @@ begin
             Screen.Cursor := crDefault;
             chkCCCache.Tag := 1; // mark modified
         end;
+    finally
+        Free;
     end;
 end;
 
 procedure TEditorOptForm.btnCCCdeleteClick(Sender: TObject);
+begin
+    if lbCCC.Items.Count = 0 then
+        Exit;
+
+    if MessageDlg(Lang[ID_EOPT_CLEARCACHE], mtConfirmation, [mbYes, mbNo], 0) = mrYes then begin
+
+        // Delete cache from disk
+        DeleteFile(devDirs.Config + DEV_COMPLETION_CACHE);
+
+        // Delete everything from RAM
+        CppParser.Reset(false);
+
+        lbCCC.Clear;
+
+        chkCCCache.Tag := 1; // mark modified
+    end;
+end;
+
+procedure TEditorOptForm.btnCCCrefreshClick(Sender: TObject);
 var
+    sl: TStringList;
     I: integer;
 begin
     if lbCCC.Items.Count = 0 then
         Exit;
 
-    if MessageDlg('Are you sure you want to clear the cache?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then begin
+    // Don't ask for confirmation, not dangerous
+
+    sl := TStringList.Create;
+    try
+        Screen.Cursor := crHourglass;
+        Application.ProcessMessages;
+
+        // Backup cache contents
+        sl.Assign(CppParser.CacheContents);
+
+        // Delete cache from disk
         DeleteFile(devDirs.Config + DEV_COMPLETION_CACHE);
 
-        FreeAndNil(CppParser);
-        CppParser := TCppParser.Create(Self);
-        CppParser.Tokenizer := CppTokenizer;
-        CppParser.ParseLocalHeaders := True;
-        CppParser.ParseGlobalHeaders := True;
-        CppParser.OnStartParsing := CppParser1StartParsing;
-        CppParser.OnEndParsing := CppParser1EndParsing;
-        CppParser.OnTotalProgress := CppParser1TotalProgress;
+        // Delete everything from RAM
+        CppParser.Reset(false);
 
-        lbCCC.Items.BeginUpdate;
-        lbCCC.Clear;
-        for I := 0 to CppParser.CacheContents.Count - 1 do
-            lbCCC.Items.Add(ReplaceFirststr(CppParser.CacheContents[i], devDirs.Exec, '.\'));
-        lbCCC.Items.EndUpdate;
+        // Parse list again
+        for I := 0 to sl.Count - 1 do
+            CppParser.AddFileToScan(sl[i]);
+        CppParser.ParseList;
+        CppParser.Save(devDirs.Config + DEV_COMPLETION_CACHE, devDirs.Exec);
 
+        Screen.Cursor := crDefault;
         chkCCCache.Tag := 1; // mark modified
+    finally
+        sl.Free;
     end;
 end;
 
@@ -1514,18 +1500,6 @@ begin
     Application.ProcessMessages;
 end;
 
-procedure TEditorOptForm.ClassCodePageChange(Sender: TObject);
-begin
-    if (ClassCodePage.ActivePage = tabCBCompletion) and (CppParser.Statements.Count = 0) then
-        FillCCC;
-end;
-
-procedure TEditorOptForm.chkCBShowInheritedClick(Sender: TObject);
-begin
-    ClassBrowser.ShowInheritedMembers := chkCBShowInherited.Checked;
-    ClassBrowser.Refresh;
-end;
-
 procedure TEditorOptForm.OnGutterClick(Sender: TObject;
     Button: TMouseButton; X, Y, Line: Integer; Mark: TSynEditMark);
 var
@@ -1551,6 +1525,7 @@ begin
     FileOptions.Enabled := cbAutoSave.Checked;
     OptionsGroup.Enabled := cbAutoSave.Checked;
     NameOptions.Enabled := cbAutoSave.Checked;
+    lblTimeStampExample.Enabled := cbAutoSave.Checked;
 end;
 
 procedure TEditorOptForm.MinutesDelayChange(Sender: TObject);
@@ -1568,6 +1543,37 @@ begin
     cbComments.Enabled := cbSymbolComplete.Checked;
     cbInclude.Enabled := cbSymbolComplete.Checked;
     cbParenth.Enabled := cbSymbolComplete.Checked;
+end;
+
+procedure TEditorOptForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+    ClearCodeIns;
+    // Our caller needs the form, so let it call Free instead
+    action := caHide;
+end;
+
+procedure TEditorOptForm.PagesMainChange(Sender: TObject);
+begin
+    if (PagesMain.ActivePage = tabCBCompletion) and (CppParser.Statements.Count = 0) then
+        FillCCC;
+end;
+
+procedure TEditorOptForm.NameOptionsClick(Sender: TObject);
+begin
+    case NameOptions.ItemIndex of
+        0: begin
+                lblTimeStampExample.Caption := Format(Lang[ID_EOPT_AUTOSAVEEXAMPLE],
+                    ['main.cpp']);
+            end;
+        1: begin
+                lblTimeStampExample.Caption := Format(Lang[ID_EOPT_AUTOSAVEEXAMPLE],
+                    [ChangeFileExt('main.cpp', '.' + IntToStr(DateTimeToUnix(Now)) + ExtractFileExt('main.cpp'))]);
+            end;
+        2: begin
+                lblTimeStampExample.Caption := Format(Lang[ID_EOPT_AUTOSAVEEXAMPLE],
+                    [ChangeFileExt('main.cpp', '.' + FormatDateTime('yyyy mm dd hh mm ss', Now) + ExtractFileExt('main.cpp'))]);
+            end;
+    end;
 end;
 
 end.

@@ -1,9 +1,9 @@
-object frmFind: TfrmFind
-  Left = 672
-  Top = 219
+object FindForm: TFindForm
+  Left = 662
+  Top = 433
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
-  Caption = #26597#25214#21644#26367#25442
+  Caption = 'Find Text'
   ClientHeight = 330
   ClientWidth = 305
   Color = clBtnFace
@@ -31,7 +31,7 @@ object frmFind: TfrmFind
     Width = 100
     Height = 25
     Anchors = [akLeft, akBottom]
-    Caption = #26597#25214'(&F)'
+    Caption = 'Find'
     Default = True
     ModalResult = 1
     TabOrder = 0
@@ -44,7 +44,7 @@ object frmFind: TfrmFind
     Height = 25
     Anchors = [akLeft, akBottom]
     Cancel = True
-    Caption = #21462#28040'(&C)'
+    Caption = 'Cancel'
     ModalResult = 2
     TabOrder = 1
     OnClick = btnCancelClick
@@ -57,28 +57,26 @@ object frmFind: TfrmFind
     Align = alTop
     TabOrder = 2
     Tabs.Strings = (
-      #24555#36895#26597#25214
-      #22312#25991#20214#20013#26597#25214
-      #24555#36895#26367#25442
-      #22312#25991#20214#20013#26367#25442)
+      'Find'
+      'Find in files'
+      'Replace'
+      'Replace in files')
     TabIndex = 0
     OnChange = FindTabsChange
     object lblFind: TLabel
       Left = 8
       Top = 29
-      Width = 80
+      Width = 56
       Height = 13
-      AutoSize = False
-      Caption = #26597#25214#20869#23481'(&N):'
+      Caption = '&Text to find:'
       FocusControl = cboFindText
     end
     object lblReplace: TLabel
       Left = 8
       Top = 71
-      Width = 80
+      Width = 65
       Height = 13
-      AutoSize = False
-      Caption = #26367#25442#20026'(&P):'
+      Caption = 'Replace with:'
       FocusControl = cboFindText
     end
     object cboFindText: TComboBox
@@ -94,14 +92,14 @@ object frmFind: TfrmFind
       Top = 118
       Width = 140
       Height = 87
-      Caption = #26597#25214#36873#39033
-      TabOrder = 1
+      Caption = '  Options:  '
+      TabOrder = 2
       object cbMatchCase: TCheckBox
         Left = 8
         Top = 16
         Width = 120
         Height = 17
-        Caption = #21306#20998#22823#23567#20889'(&S)'
+        Caption = 'C&ase sensitive'
         TabOrder = 0
       end
       object cbWholeWord: TCheckBox
@@ -109,7 +107,7 @@ object frmFind: TfrmFind
         Top = 40
         Width = 121
         Height = 17
-        Caption = #20840#23383#21305#37197'(&W)'
+        Caption = '&Whole words only'
         TabOrder = 1
       end
       object cbPrompt: TCheckBox
@@ -117,7 +115,7 @@ object frmFind: TfrmFind
         Top = 64
         Width = 120
         Height = 17
-        Caption = #26367#25442#26102#25552#31034'(&M)'
+        Caption = '&Prompt on Replace'
         TabOrder = 2
       end
     end
@@ -126,14 +124,14 @@ object frmFind: TfrmFind
       Top = 118
       Width = 140
       Height = 70
-      Caption = #26597#25214#26041#21521
-      TabOrder = 2
+      Caption = '  Direction:  '
+      TabOrder = 3
       object rbBackward: TRadioButton
         Left = 8
         Top = 42
         Width = 121
         Height = 17
-        Caption = #21521#21518#26597#25214'(&B)'
+        Caption = '&Backward'
         TabOrder = 0
       end
       object rbForward: TRadioButton
@@ -141,7 +139,7 @@ object frmFind: TfrmFind
         Top = 18
         Width = 121
         Height = 17
-        Caption = #21521#21069#26597#25214'(&D)'
+        Caption = '&Forward'
         Checked = True
         TabOrder = 1
         TabStop = True
@@ -152,14 +150,14 @@ object frmFind: TfrmFind
       Top = 118
       Width = 140
       Height = 87
-      Caption = #26597#25214#33539#22260
-      TabOrder = 3
+      Caption = '  Where:  '
+      TabOrder = 4
       object rbProjectFiles: TRadioButton
         Left = 8
         Top = 18
         Width = 121
         Height = 17
-        Caption = #25972#20010#24037#31243'(&H)'
+        Caption = 'Files in Project'
         Checked = True
         TabOrder = 0
         TabStop = True
@@ -169,7 +167,7 @@ object frmFind: TfrmFind
         Top = 42
         Width = 121
         Height = 17
-        Caption = #24050#25171#24320#30340#25991#20214'(&E)'
+        Caption = 'Open Files'
         TabOrder = 1
       end
       object rbCurFile: TRadioButton
@@ -177,7 +175,7 @@ object frmFind: TfrmFind
         Top = 64
         Width = 121
         Height = 17
-        Caption = #24403#21069#25991#20214'(&L)'
+        Caption = 'Current file'
         TabOrder = 2
       end
     end
@@ -186,14 +184,14 @@ object frmFind: TfrmFind
       Top = 212
       Width = 140
       Height = 70
-      Caption = #26597#25214#21306#22495
-      TabOrder = 4
+      Caption = '  Scope:  '
+      TabOrder = 5
       object rbGlobal: TRadioButton
         Left = 8
         Top = 18
         Width = 121
         Height = 17
-        Caption = #26597#25214#20840#37096'(&G)'
+        Caption = '&Global'
         Checked = True
         TabOrder = 0
         TabStop = True
@@ -203,7 +201,7 @@ object frmFind: TfrmFind
         Top = 42
         Width = 121
         Height = 17
-        Caption = #26597#25214#36873#25321#21306#22495'(&S)'
+        Caption = '&Selected only'
         TabOrder = 1
       end
     end
@@ -212,14 +210,14 @@ object frmFind: TfrmFind
       Top = 212
       Width = 140
       Height = 70
-      Caption = #26597#25214#36215#28857
-      TabOrder = 5
+      Caption = '  Origin:  '
+      TabOrder = 6
       object rbFromCursor: TRadioButton
         Left = 8
         Top = 18
         Width = 121
         Height = 17
-        Caption = #20174#20809#26631#22788#24320#22987'(&U)'
+        Caption = 'From &cursor'
         Checked = True
         TabOrder = 0
         TabStop = True
@@ -229,7 +227,7 @@ object frmFind: TfrmFind
         Top = 42
         Width = 121
         Height = 17
-        Caption = #20174#22836#24320#22987'(&O)'
+        Caption = 'Entire &scope'
         TabOrder = 1
       end
     end
@@ -239,24 +237,24 @@ object frmFind: TfrmFind
       Width = 289
       Height = 21
       ItemHeight = 13
-      TabOrder = 6
+      TabOrder = 1
     end
   end
   object FindPopup: TPopupMenu
     Left = 112
     Top = 296
     object FindCut: TMenuItem
-      Caption = #21098#20999'(&T)'
+      Caption = 'Cut'
       ShortCut = 16472
       OnClick = FindCutClick
     end
     object FindCopy: TMenuItem
-      Caption = #22797#21046'(&C)'
+      Caption = 'Copy'
       ShortCut = 16451
       OnClick = FindCopyClick
     end
     object FindPaste: TMenuItem
-      Caption = #31896#36148'(&P)'
+      Caption = 'Paste'
       ShortCut = 16470
       OnClick = FindPasteClick
     end
@@ -264,7 +262,7 @@ object frmFind: TfrmFind
       Caption = '-'
     end
     object FindSelAll: TMenuItem
-      Caption = #20840#36873'(&S)'
+      Caption = 'Select All'
       ShortCut = 16449
       OnClick = FindSelAllClick
     end

@@ -35,11 +35,10 @@ object IconForm: TIconForm
     Font.Height = -12
     Font.Name = 'Segoe UI'
     Font.Style = []
-    ModalResult = 1
     ParentFont = False
     TabOrder = 1
     OnClick = btnOkClick
-    NumGlyphs = 2
+    Kind = bkOK
   end
   object btnCancel: TBitBtn
     Left = 392
@@ -47,11 +46,9 @@ object IconForm: TIconForm
     Width = 87
     Height = 24
     Anchors = [akLeft, akBottom]
-    Cancel = True
     Caption = #21462#28040'(&C)'
-    ModalResult = 2
     TabOrder = 2
-    NumGlyphs = 2
+    Kind = bkCancel
   end
   object IconView: TListView
     Left = 0
@@ -86,6 +83,7 @@ object IconForm: TIconForm
     ShowHint = True
     TabOrder = 0
     OnDblClick = IconViewDblClick
+    OnInfoTip = IconViewInfoTip
   end
   object ImageList: TImageList
     Height = 32

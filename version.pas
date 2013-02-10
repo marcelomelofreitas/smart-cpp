@@ -96,16 +96,16 @@ const
     PACKMAN_PROGRAM = 'packman.exe';
 
     // File dialog filters
-    FLT_BASE = '所有支持的文件||';
-    FLT_ALLFILES = '全部文件 (*.*)|*.*|';
-    FLT_PROJECTS = 'Dev-C++ 工程文件 (*.dev)|*.dev';
-    FLT_HEADS = '头文件 (*.h;*.hpp;*.rh;*.hh)|*.h;*.hpp;*.rh;*.hh';
-    FLT_CS = 'C 源代码文件 (*.c)|*.c';
-    FLT_CPPS = 'C++ 源代码文件 (*.cpp;*.cc;*.cxx;*.c++;*.cp)|*.cpp;*.cc;*.cxx;*.c++;*.cp';
-    FLT_RES = '资源文件 (*.rc)|*.rc';
-    FLT_HELPS = '帮助文件 (*.hlp;*.chm;*.col)|*.hlp;*.chm;*.col|HTML 文件 (*.htm;*.html)|*.htm;*.html|Text 文件 (*.doc;*.rtf;*.txt)|*.doc;*.rtf;*.txt|所有文件 (*.*)|*.*';
-    FLT_MSVCPROJECTS = 'Microsoft Visual C++ 工程文件 (*.dsp)|*.dsp';
-    FLT_CBPROJECTS = 'Code::Blocks 工程文件 (*.cbp)|*.cbp';
+	  FLT_TEXTS         = '文本文档 (*.txt)|*.txt';
+    FLT_ALLFILES      = '所有文件 (*.*)|*.*|';
+    FLT_PROJECTS      = 'Dev-C++ 工程文件 (*.dev)|*.dev';
+    FLT_HEADS         = '头文件 (*.h;*.hpp;*.rh;*.hh)|*.h;*.hpp;*.rh;*.hh';
+    FLT_CS            = 'C 源代码文件 (*.c)|*.c';
+    FLT_CPPS          = 'C++ 源代码文件 (*.cpp;*.cc;*.cxx;*.c++;*.cp)|*.cpp;*.cc;*.cxx;*.c++;*.cp';
+    FLT_RES           = '资源文件 (*.rc)|*.rc';
+    FLT_HELPS         = '帮助文件 (*.hlp;*.chm;*.col)|*.hlp;*.chm;*.col|HTML 文件 (*.htm;*.html)|*.htm;*.html|Text 文件 (*.doc;*.rtf;*.txt)|*.doc;*.rtf;*.txt|所有文件 (*.*)|*.*';
+    FLT_MSVCPROJECTS  = 'Microsoft Visual C++ 工程文件 (*.dsp)|*.dsp';
+    FLT_CBPROJECTS    = 'Code::Blocks 工程文件 (*.cbp)|*.cbp';
 
     // Custom synedit style properties
     cBP = 'Breakpoints';
@@ -123,4 +123,3 @@ const
 implementation
 
 end.
-

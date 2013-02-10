@@ -320,6 +320,7 @@ const
   ID_GRP_COMPRESULTS                    = 16006;
   ID_TOTALERRORS                        = 16007;
   ID_OUTPUTSIZE                         = 16008;
+  ID_TOTALWARNINGS                      = 16009;
   //free to 329 for compile log sheet
 
   ID_DEB_WATCHES                        = 17001;
@@ -476,6 +477,7 @@ const
 
     // Class browsing Tab
   // 490 is empty now - you can use it ;)
+  ID_EOPT_AUTOSAVEONLYOPENFILE          = 27040;
   ID_EOPT_BROWSERLOCAL                  = 27041;
   ID_EOPT_BROWSERSAMPLE                 = 27042;
   ID_EOPT_BROWSERENGINE                 = 27043;
@@ -485,8 +487,7 @@ const
 
   ID_EOPT_ENABLEAUTOSAVE                = 27047;
   ID_EOPT_AUTOSAVEINTERNAL              = 27048;
-  ID_EOPT_SAVEALLFILES                  = 27049;
-  ID_EOPT_SAVEONLYOPENFILE              = 27040;
+  ID_EOPT_AUTOSAVEALLFILES              = 27049;
 
   ID_NP                                 = 27050;
   ID_NP_DESC                            = 27051;
@@ -498,6 +499,14 @@ const
   ID_EOPT_SYMBOLINCLUDE                 = 27056;
   ID_EOPT_SYMBOLSQUARE                  = 27057;
   ID_EOPT_SYMBOLCOMMENT                 = 27058;
+  ID_EOPT_AUTOSAVEPROJECT               = 27059;
+  ID_EOPT_AUTOSAVEOVERWRITE             = 27060;
+  ID_EOPT_AUTOSAVEUNIX                  = 27061;
+  ID_EOPT_AUTOSAVETIME                  = 27062;
+  ID_EOPT_AUTOSAVEMODE                  = 27063;
+  ID_EOPT_AUTOSAVEEXAMPLE               = 27064;
+  ID_EOPT_CLEARCACHE                    = 27065;
+  ID_EOPT_REFRESHHINT                   = 27066;
 
   // new project
   ID_NP_PRJNAME                         = 28001;
@@ -640,6 +649,7 @@ const
 
   ID_ENV_PAUSECONSOLE                   = 38054;
   ID_ENV_AUTOREMEMBER                   = 38055;
+  ID_ENV_CHECKASSOCS                    = 38061;
 
   ID_FIND_REPLACE                       = 38056;
   ID_FIND_REPLACEFILES                  = 38057;
@@ -727,6 +737,11 @@ const
   ID_COPT_RENAMECOMPSET                 = 47007;
   ID_COPT_PROMPTRENAMECOMPSET           = 47008;
   ID_COPT_FURTHEROPTS                   = 47009;
+  ID_COPT_ADDCOMPILERS                  = 47010;
+  ID_COPT_FINDCOMPHINT                  = 47011;
+  ID_COPT_ADDCOMPHINT                   = 47012;
+  ID_COPT_DELCOMPHINT                   = 47013;
+  ID_COPT_RENAMECOMPHINT                = 47014;
 
   // Help Menu Editor Form
   ID_HE                                 = 48001;
@@ -845,6 +860,7 @@ const
   ID_POPT_OVERRIDEOUT                   = 55027;
   ID_POPT_ADDLIBRARY                    = 55028;
   ID_POPT_UNITSFORMAT                   = 55029;
+  ID_POPT_LOGAUTOSAVE                   = 55030;
 
   //New template form
   ID_NEWTPL_NAME                        = 56001;
@@ -883,11 +899,9 @@ const
   ID_NEWVAR_MSG_NOIMPL                  = 57014;
   ID_NEWVAR_MSG_NOLINE                  = 57015;
 
-  //New member form
+  //New class/member form
   ID_NEWMEMB_MEMBNAME                   = 57016;
   ID_NEWMEMB_ARGS                       = 57017;
-
-  //New class form
   ID_NEWCLASS_NAME                      = 57018;
   ID_NEWCLASS_INHERIT                   = 57019;
   ID_NEWCLASS_INHERITANCE               = 57020;
@@ -896,10 +910,9 @@ const
   ID_NEWCLASS_CPPFILE                   = 57023;
   ID_NEWCLASS_HFILE                     = 57024;
   ID_NEWCLASS_ADDTOPROJ                 = 57025;
-
-  //New member form
   ID_NEWMEMB_ATTRS                      = 57026;
-  // free to 979
+  ID_NEWCLASS_CONSTRUCTOR               = 57027;
+  ID_NEWCLASS_DESTRUCTOR                = 57028;
 
   //File properties form
   ID_PROPS_FILENAME                     = 58001;
@@ -1001,7 +1014,9 @@ const
   ID_STATUSBARPLUS                      = 62019;
   ID_DONEPARSING                        = 62020;
   ID_SEARCHCOUNT                        = 62021;
-
+  ID_DONEPARSINGIN                      = 62022;
+  ID_DONEPARSINGHINT                    = 62023;
+  
 { -- Button Captions -- }
   ID_BTN_OK                             = 63001;
   ID_BTN_CANCEL                         = 63002;
@@ -1025,6 +1040,7 @@ const
   ID_BTN_IMPORT                         = 63020;
   ID_BTN_FLOATDEBUG                     = 63021;
   ID_BTN_CLEAR                          = 63022;
+  ID_BTN_REFRESH                        = 63023;
   // free to 2600
 
 { -- end buttons -- }
@@ -1067,6 +1083,8 @@ const
   ID_ENV_CONFIGCHANGED                  = 66020;
   ID_ENV_UACERROR                       = 66021;
   ID_ENV_UIFONT                         = 66022;
+  ID_ENV_CACHEFAIL                      = 66023;
+  ID_ENV_PRINTERFAIL                    = 66024;
 
 { Execute menu }
   ID_ITEM_EXECPARAMS                    = 67001;

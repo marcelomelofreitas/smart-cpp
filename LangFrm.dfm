@@ -1,6 +1,6 @@
 object LangForm: TLangForm
-  Left = 439
-  Top = 175
+  Left = 620
+  Top = 226
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Smart-C++ '#31532#19968#27425#36816#34892#37197#32622
