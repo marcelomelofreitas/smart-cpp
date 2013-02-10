@@ -100,6 +100,7 @@ type
         cvsdownloadlabel: TLabel;
         cbUIfontsize: TComboBox;
         cbPauseConsole: TCheckBox;
+        cbCheckAssocs: TCheckBox;
         procedure BrowseClick(Sender: TObject);
         procedure btnOkClick(Sender: TObject);
         procedure FormShow(Sender: TObject);
@@ -150,7 +151,6 @@ begin
                     edTemplatesDir.Text := IncludeTrailingPathDelimiter(s);
             end;
 
-        // why was it commented-out???
         3: // icon library browse
             begin
                 s := ExpandFileto(edIcoLib.Text, devDirs.Exec);
@@ -172,20 +172,26 @@ begin
                     edLang.Text := IncludeTrailingPathDelimiter(ExtractRelativePath(devDirs.Exec, s));
             end;
 
-        6: // CVS Executable Filename
-            begin
-                dmMain.OpenDialog.Filter := FLT_ALLFILES;
-                dmMain.OpenDialog.FileName := edCVSExec.Text;
-                if dmMain.OpenDialog.Execute then
-                    edCVSExec.Text := dmMain.OpenDialog.FileName;
+        6: begin // CVS Executable Filename
+                with TOpenDialog.Create(self) do try
+                    Filter := FLT_ALLFILES;
+                    FileName := edCVSExec.Text;
+                    if Execute then
+                        edCVSExec.Text := FileName;
+                finally
+                    Free;
+                end;
             end;
 
-        7: // Alternate Configuration File
-            begin
-                dmMain.OpenDialog.Filter := FLT_ALLFILES;
-                dmMain.OpenDialog.FileName := edAltConfig.Text;
-                if dmMain.OpenDialog.Execute then
-                    edAltConfig.Text := dmMain.OpenDialog.FileName;
+        7: begin // Alternate Configuration File
+                with TOpenDialog.Create(self) do try
+                    Filter := FLT_ALLFILES;
+                    FileName := edAltConfig.Text;
+                    if Execute then
+                        edAltConfig.Text := FileName;
+                finally
+                    Free;
+                end;
             end;
     end;
 end;
@@ -204,6 +210,7 @@ begin
         cbdblFiles.Checked := DblFiles;
         cbNoSplashScreen.Checked := NoSplashScreen;
         cbPauseConsole.Checked := ConsolePause;
+        cbCheckAssocs.Checked := CheckAssocs;
         seMRUMax.Value := MRUMax;
 
         cbShowProgress.Checked := ShowProgress;
@@ -256,7 +263,7 @@ end;
 
 procedure TEnviroForm.btnOkClick(Sender: TObject);
 var
-    idx: integer;
+    I: integer;
     s: AnsiString;
 begin
     if chkAltConfig.Enabled then begin
@@ -275,6 +282,7 @@ begin
         MinOnRun := cbMinOnRun.Checked;
         DblFiles := cbdblFiles.Checked;
         ConsolePause := cbPauseConsole.Checked;
+        CheckAssocs := cbCheckAssocs.Checked;
         MRUMax := seMRUMax.Value;
         if not MultiLineTab then begin
             if cboTabsTop.ItemIndex in [2, 3] then begin
@@ -291,10 +299,23 @@ begin
         AutoCloseProgress := cbAutoCloseProgress.Checked;
         WatchHint := cbWatchHint.Checked;
         InterfaceFont := cbUIFont.Text;
-        InterfaceFontSize := strtoint(cbUIfontsize.Text);
+        InterfaceFontSize := StrToIntDef(cbUIfontsize.Text, 9);
+    end;
 
-        MainForm.Font.Name := devData.InterfaceFont;
-        MainForm.Font.Size := devData.InterfaceFontSize;
+    MainForm.Font.Name := devData.InterfaceFont;
+    MainForm.Font.Size := devData.InterfaceFontSize;
+
+    try
+
+        // Force update
+        for I := 0 to AssociationsCount - 1 do
+            if lstAssocFileTypes.Checked[I] then
+                Associate(I)
+            else
+                Unassociate(I);
+    except
+        MessageBox(application.handle, PAnsiChar(Lang[ID_ENV_UACERROR]), PAnsiChar(Lang[ID_ERROR]), MB_OK);
+        devData.CheckAssocs := false; // don't bother the user again on next startup
     end;
 
     devDirs.Icons := IncludeTrailingPathDelimiter(ExpandFileto(edIcoLib.Text, devDirs.Exec));
@@ -306,25 +327,7 @@ begin
         Lang.CheckLanguageFiles;
     end;
 
-    with dmMain.OpenDialog do begin
-        OptionsEx := [];
-        Options := Options - [ofOldStyleDialog, ofNoLongNames];
-    end;
-
-    dmMain.SaveDialog.OptionsEx := dmMain.OpenDialog.OptionsEx;
-    dmMain.SaveDialog.Options := dmMain.OpenDialog.Options;
-
     devExternalPrograms.Programs.Assign(vleExternal.Strings);
-
-    try
-        for idx := 0 to AssociationsCount - 1 do
-            if lstAssocFileTypes.Checked[idx] then
-                Associate(idx)
-            else
-                Unassociate(idx);
-    except
-        MessageBox(application.handle, PAnsiChar(Lang[ID_ENV_UACERROR]), PAnsiChar(Lang[ID_ERROR]), MB_OK);
-    end;
 
     devCVSHandler.Executable := edCVSExec.Text;
     devCVSHandler.Compression := spnCVSCompression.Value;
@@ -346,6 +349,8 @@ end;
 procedure TEnviroForm.FormCreate(Sender: TObject);
 begin
     LoadText;
+
+    CheckAssociations(false); // read only, don't try to fix them
 end;
 
 procedure TEnviroForm.vleExternalEditButtonClick(Sender: TObject);
@@ -355,10 +360,12 @@ begin
         Exit;
     end;
 
-    with dmMain.OpenDialog do begin
+    with TOpenDialog.Create(Self) do try
         Filter := FLT_ALLFILES;
         if Execute then
             vleExternal.Cells[1, vleExternal.Row] := Filename;
+    finally
+        Free;
     end;
 end;
 
@@ -435,3 +442,4 @@ begin
 end;
 
 end.
+

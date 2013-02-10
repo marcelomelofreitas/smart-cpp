@@ -3,7 +3,7 @@ object ParamsForm: TParamsForm
   Top = 259
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
-  Caption = #36816#34892#21442#25968
+  Caption = 'Parameters'
   ClientHeight = 170
   ClientWidth = 297
   Color = clBtnFace
@@ -22,7 +22,7 @@ object ParamsForm: TParamsForm
     Top = 8
     Width = 281
     Height = 56
-    Caption = #35831#36755#20837#20256#36882#32473#20027#31243#24207#36816#34892#21442#25968
+    Caption = 'Parameters to pass to your program :'
     TabOrder = 0
     object ParamEdit: TEdit
       Left = 8
@@ -37,7 +37,7 @@ object ParamsForm: TParamsForm
     Top = 72
     Width = 281
     Height = 56
-    Caption = #20027#31243#24207
+    Caption = 'Host Application :'
     TabOrder = 1
     object LoadBtn: TSpeedButton
       Left = 248
@@ -86,27 +86,15 @@ object ParamsForm: TParamsForm
     Top = 138
     Width = 75
     Height = 25
-    Caption = #30830#23450'(&O)'
-    Default = True
-    ModalResult = 1
     TabOrder = 2
-    NumGlyphs = 2
+    Kind = bkOK
   end
   object CancelBtn: TBitBtn
     Left = 214
     Top = 138
     Width = 75
     Height = 25
-    Cancel = True
-    Caption = #21462#28040'(&C)'
-    ModalResult = 2
     TabOrder = 3
-    NumGlyphs = 2
-  end
-  object OpenDialog: TOpenDialog
-    DefaultExt = '.exe'
-    Filter = 'Applications (*.exe)|*.exe'
-    Left = 24
-    Top = 88
+    Kind = bkCancel
   end
 end

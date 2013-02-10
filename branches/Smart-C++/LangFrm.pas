@@ -48,11 +48,6 @@ type
         ProgressPanel: TPanel;
         pbCCCache: TProgressBar;
         ParseLabel: TLabel;
-        SecondPanel: TPanel;
-        ClassBrowserInfo1: TLabel;
-        ClassBrowserInfo2: TLabel;
-        YesClassBrowser: TRadioButton;
-        NoClassBrowser: TRadioButton;
         FinishPanel: TPanel;
         Finish2: TLabel;
         Finish3: TLabel;
@@ -86,7 +81,7 @@ type
 implementation
 
 uses
-    datamod, DevThemes, devcfg, utils, main, version;
+    datamod, devcfg, utils, main, version, ImageTheme;
 
 {$R *.dfm}
 
@@ -127,34 +122,13 @@ var
     fullpath: AnsiString;
 begin
     if OkBtn.Tag = 0 then begin
-        OkBtn.Tag := 1;
-        SecondPanel.Visible := true;
+        OkBtn.Tag := 1; // goto cache page
+        CachePanel.Visible := true;
         FirstPanel.Visible := false;
         devData.ThemeChange := true;
-        devData.Theme := 'Gnome';
+        devData.Theme := 'NEWLOOK';
         dmMain.InitHighlighterFirstTime(EditorBox.ItemIndex);
     end else if OkBtn.Tag = 1 then begin
-        if YesClassBrowser.Checked then begin
-            OkBtn.Tag := 2;
-            CachePanel.Visible := true;
-            SecondPanel.Visible := false;
-        end else begin
-            OkBtn.Tag := 3;
-            //OkBtn.Kind := bkOK;
-
-            OkBtn.ModalResult := mrOK;
-            OkBtn.Caption := '完成(&F)';
-
-            FinishPanel.Visible := true;
-            SecondPanel.Visible := false;
-            devCodeCompletion.Enabled := false;
-            devCodeCompletion.UseCacheFiles := false;
-            devClassBrowsing.Enabled := false;
-            devClassBrowsing.ParseLocalHeaders := false;
-            devClassBrowsing.ParseGlobalHeaders := false;
-            SaveOptions;
-        end;
-    end else if OkBtn.Tag = 2 then begin
         if YesCache.Checked or AltCache.Checked then begin
             YesCache.Enabled := false;
             NoCache.Enabled := false;
@@ -166,9 +140,9 @@ begin
             OkBtn.Caption := '请稍候...';
             devCodeCompletion.Enabled := true;
             devCodeCompletion.UseCacheFiles := true;
-            devClassBrowsing.Enabled := true;
-            devClassBrowsing.ParseLocalHeaders := true;
-            devClassBrowsing.ParseGlobalHeaders := true;
+            devCodeCompletion.Enabled := true;
+            devCodeCompletion.ParseLocalHeaders := true;
+            devCodeCompletion.ParseGlobalHeaders := true;
             SaveOptions;
 
             MainForm.CppParser.ParseLocalHeaders := True;
@@ -182,7 +156,7 @@ begin
             MainForm.ClassBrowser.SetUpdateOff;
 
             s := TStringList.Create;
-            if (AltCache.Checked) then begin
+            if AltCache.Checked then begin
                 for I := 0 to AltFileList.Count - 1 do
                     s.Add(AltFileList.Items[I]);
             end else
@@ -194,6 +168,7 @@ begin
             f := TStringList.Create;
             if not AltCache.Checked then begin
                 for i := 0 to pred(s.Count) do begin
+
                     // Relative paths make the recursive/loop searcher go nuts
                     s[i] := ReplaceFirstStr(s[i], '%path%\', devDirs.exec);
                     if DirectoryExists(s[i]) then begin
@@ -241,9 +216,9 @@ begin
 
             Screen.Cursor := crDefault;
         end else begin
-            devClassBrowsing.Enabled := true;
-            devClassBrowsing.ParseLocalHeaders := true;
-            devClassBrowsing.ParseGlobalHeaders := false;
+            devCodeCompletion.Enabled := true;
+            devCodeCompletion.ParseLocalHeaders := true;
+            devCodeCompletion.ParseGlobalHeaders := false; // can be slow without cache
             devClassBrowsing.ShowInheritedMembers := false;
         end;
         OkBtn.Tag := 3;
@@ -277,7 +252,7 @@ var
     I: integer;
     s: AnsiString;
 begin
-    with dmMain.OpenDialog do begin
+    with TOpenDialog.Create(self) do try
         Filter := FLT_HEADS;
         Title := '打开文件';
         InitialDir := devCompiler.CppDir;
@@ -287,19 +262,14 @@ begin
                 AltFileList.Items.Add(s);
             end;
         end;
+    finally
+        Free;
     end;
 end;
 
 procedure TLangForm.ButtonRemoveClick(Sender: TObject);
-//var
-//	I : integer;
 begin
     AltFileList.DeleteSelected;
-    //	for I:= 0 to AltFileList.Count-1 do begin
-    //		if AltFileList.Selected[I] then begin
-    //			AltFileList.Items.Delete(i);
-    //		end;
-    //	end;
 end;
 
 procedure TLangForm.ButtonAddFolderClick(Sender: TObject);
@@ -328,6 +298,9 @@ begin
 
     HasProgressStarted := false;
 
+    // Obtain a list of themes
+    // devImageThemes.GetThemeTitles('NEWLOOK');
+
     // Editor styles
     EditorBox.Items.Add('怀旧经典');
     EditorBox.Items.Add('深邃夜晚');
@@ -335,12 +308,12 @@ begin
     EditorBox.Items.Add('Visual Studio');
     EditorBox.ItemIndex := 1;
 
-    ThemeImage.Picture.Bitmap.LoadFromResourceName(HInstance, 'NIGHT');
+    ThemeImage.Picture.Bitmap.LoadFromResourceName(HInstance, 'NEWLOOKCLASSICPLUS');
 end;
 
 procedure TLangForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
     Action := caFree;
 end;
-end.
 
+end.

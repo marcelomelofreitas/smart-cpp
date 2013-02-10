@@ -1,6 +1,6 @@
 object PrintForm: TPrintForm
-  Left = 623
-  Top = 463
+  Left = 665
+  Top = 354
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Print file'

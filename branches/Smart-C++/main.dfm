@@ -238,7 +238,7 @@ object MainForm: TMainForm
           Width = 129
           Height = 21
           Anchors = [akLeft, akTop, akRight]
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 0
           OnKeyPress = edGdbCommandKeyPress
         end
@@ -420,7 +420,7 @@ object MainForm: TMainForm
           Width = 400
           Height = 21
           Anchors = [akLeft, akTop, akRight]
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 7
           OnKeyPress = EvaluateInputKeyPress
         end
@@ -785,7 +785,6 @@ object MainForm: TMainForm
       EdgeOuter = esNone
       Flat = True
       HotImages = dmMain.MenuImages_NewLook
-      Images = dmMain.SpecialImages_NewLook
       ParentShowHint = False
       ShowHint = True
       TabOrder = 5
@@ -1015,7 +1014,6 @@ object MainForm: TMainForm
         BorderStyle = bsNone
         MultiSelectStyle = []
         ShowFilter = sfAll
-        OnSelect = ClassBrowser1Select
         Parser = CppParser
         ItemImages.Globals = 0
         ItemImages.Classes = 1
@@ -1728,7 +1726,6 @@ object MainForm: TMainForm
     end
     object HelpMenu: TMenuItem
       Action = actHelpMenu
-      SubMenuImages = dmMain.HelpImages_Gnome
       GroupIndex = 9
       object HelpMenuItem: TMenuItem
         Caption = #24110#21161#25991#26723'(&D)...'
@@ -2788,7 +2785,6 @@ object MainForm: TMainForm
       Category = 'ClassBrowser'
       Caption = 'Use colors'
       Checked = True
-      OnExecute = actBrowserUseColorsExecute
     end
     object actAbortCompilation: TAction
       Category = 'Execute'

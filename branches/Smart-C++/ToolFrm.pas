@@ -404,15 +404,10 @@ procedure TToolForm.btnAddClick(Sender: TObject);
 var
     NewItem: PToolItem;
 begin
-    with TToolEditForm.Create(Self) do
-    try
-        new(NewItem);
-        edTitle.Text := '';
-        edProgram.Text := '';
-        edWorkDir.Text := '';
-        edParams.Text := '';
-        if ShowModal = mrOK then
-        begin
+    with TToolEditForm.Create(Self) do try
+        if ShowModal = mrOK then begin
+            new(NewItem);
+
             NewItem.Title := edTitle.Text;
             NewItem.Exec := edProgram.Text;
             NewItem.WorkDir := edWorkDir.Text;

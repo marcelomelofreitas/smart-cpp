@@ -40,7 +40,7 @@ type
         GroupBox1: TGroupBox;
         LicenseText: TMemo;
         GroupBox2: TGroupBox;
-    OrwellLabel: TLabel;
+        OrwellLabel: TLabel;
         BloodSite: TLabel;
         MingwLabel: TLabel;
         MingwSite: TLabel;
@@ -109,7 +109,7 @@ end;
 
 procedure TAboutForm.btnAuthorsClick(Sender: TObject);
 const MessageText =
-        '-------------------------------------------------'#13#10 +
+    '-------------------------------------------------'#13#10 +
         '          Dev-C++ Development Team'#13#10 +
         '-------------------------------------------------'#13#10 +
         '- Development: Colin Laplace, Mike Berg, Hongli Lai, Yiannis Mandravellos'#13#10 +

@@ -24,11 +24,11 @@ interface
 uses
     {$IFDEF WIN32}
     Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-    StdCtrls, Buttons, MultiLangSupport, Spin;
+    StdCtrls, Buttons, Spin;
 {$ENDIF}
 {$IFDEF LINUX}
 SysUtils, Classes, QGraphics, QControls, QForms, QDialogs,
-QStdCtrls, QButtons, MultiLangSupport, QComCtrls;
+QStdCtrls, QButtons, QComCtrls;
 {$ENDIF}
 
 type
@@ -52,9 +52,6 @@ type
         procedure LoadText;
     end;
 
-    //var
-    //  PrintForm: TPrintForm;
-
 implementation
 
 uses
@@ -67,21 +64,6 @@ begin
     // Set interface font
     Font.Name := devData.InterfaceFont;
     Font.Size := devData.InterfaceFontSize;
-
-    Caption := Lang[ID_PRT];
-    grpParams.Caption := '  ' + Lang[ID_PRT_GRP_PARAMS] + '  ';
-    grpPages.Caption := '  ' + Lang[ID_PRT_GRP_PAGES] + '  ';
-    cbColors.Caption := Lang[ID_PRT_COLORS];
-    cbHighlight.Caption := Lang[ID_PRT_HIGHLIGHT];
-    cbWordWrap.Caption := Lang[ID_PRT_WORDWRAP];
-    rbLN.Caption := Lang[ID_PRT_PRTLINENUM];
-    rbLNMargin.Caption := Lang[ID_PRT_PRTLINENUMMAR];
-    rbNoLN.Caption := Lang[ID_PRT_NOPRTLINENUMMAR];
-    lblCopies.Caption := Lang[ID_PRT_COPIES];
-    cbSelection.Caption := Lang[ID_PRT_SELONLY];
-
-    btnOk.Caption := Lang[ID_BTN_OK];
-    btnCancel.Caption := Lang[ID_BTN_CANCEL];
 end;
 
 procedure TPrintForm.FormCreate(Sender: TObject);

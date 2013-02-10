@@ -77,7 +77,6 @@ begin
     lvEntries.Items.BeginUpdate;
     lvEntries.Items.Clear;
 
-
     for I := 0 to fParser.Statements.Count - 1 do begin
 
         st := PStatement(fParser.Statements[I]);
@@ -93,7 +92,6 @@ begin
                             scsPrivate: StateIndex := 5;
                             scsProtected: StateIndex := 6;
                             scsPublic: StateIndex := 7;
-                            scsPublished: StateIndex := 7;
                         end;
                         SubItems.Add(st^._Type);
                         SubItems.Add(st^._ScopeCmd);
@@ -142,7 +140,6 @@ end;
 
 procedure TFunctionSearchForm.txtSearchKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-    if lvEntries = nil then Exit;
     case Key of
         VK_DOWN, VK_UP: begin
                 lvEntries.Perform(WM_KEYDOWN, Key, 0); // send the key to lventries
@@ -156,8 +153,7 @@ begin
         ModalResult := mrOK;
 end;
 
-procedure TFunctionSearchForm.lvEntriesCompare(Sender: TObject; Item1,
-    Item2: TListItem; Data: Integer; var Compare: Integer);
+procedure TFunctionSearchForm.lvEntriesCompare(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
 begin
     Compare := CompareText(Item1.SubItems[1], Item2.SubItems[1]);
 end;

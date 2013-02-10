@@ -25,7 +25,6 @@ program devcpp;
 
 uses
     FastMM4 in 'FastMM4.pas',
-    CnWaterEffect in 'CnWaterEffect.pas',
 
     {$IFDEF WIN32}
     Windows, Forms, sysUtils, SHFolder, Dialogs,
@@ -56,7 +55,7 @@ uses
     devcfg in 'devcfg.pas',
     datamod in 'datamod.pas' {dmMain: TDataModule},
     EditorOptFrm in 'EditorOptFrm.pas' {EditorOptForm},
-    CodeInsFrm in 'CodeInsFrm.pas' {CodeInsForm},
+    CodeInsList in 'CodeInsList.pas',
     IncrementalFrm in 'IncrementalFrm.pas' {IncrementalForm},
     FindFrm in 'FindFrm.pas' {FindForm},
     editor in 'editor.pas',
@@ -64,7 +63,6 @@ uses
     debugreader in 'debugreader.pas',
     debugger in 'debugger.pas',
     CFGData in 'CFGData.pas',
-    CFGINI in 'CFGINI.pas',
     CheckForUpdate in 'CheckForUpdate.pas',
     prjtypes in 'prjtypes.pas',
     ResourceSelectorFrm in 'ResourceSelectorFrm.pas' {ResourceSelectorForm},
@@ -73,7 +71,7 @@ uses
     NewTemplateFrm in 'NewTemplateFrm.pas' {NewTemplateForm},
     FunctionSearchFrm in 'FunctionSearchFrm.pas' {FunctionSearchForm},
     NewVarFrm in 'NewVarFrm.pas' {NewVarForm},
-    NewMemberFrm in 'NewMemberFrm.pas' {NewMemberForm},
+    NewFunctionFrm in 'NewFunctionFrm.pas' {NewFunctionForm},
     NewClassFrm in 'NewClassFrm.pas' {NewClassForm},
     ProfileAnalysisFrm in 'ProfileAnalysisFrm.pas' {ProfileAnalysisForm},
     FilePropertiesFrm in 'FilePropertiesFrm.pas' {FilePropertiesForm},
@@ -89,7 +87,6 @@ uses
     WindowListFrm in 'WindowListFrm.pas' {WindowListForm},
     CVSThread in 'CVSThread.pas',
     CVSPasswdFrm in 'CVSPasswdFrm.pas' {CVSPasswdForm},
-    DevThemes in 'DevThemes.pas',
     ParamsFrm in 'ParamsFrm.pas' {ParamsForm},
     CompOptionsFrame in 'CompOptionsFrame.pas' {CompOptionsFrame: TFrame},
     CompOptionsFrm in 'CompOptionsFrm.pas' {CompOptionsForm},
@@ -106,14 +103,8 @@ var
     appdata, inifilename, exefolder: AnsiString;
     tempc: array[0..MAX_PATH] of char;
 begin
-    { TODO: EXENAME!! }
-    //inifilename := 'smartcpp.ini';
-    //exefolder := ExtractFilePath('smartcpp');
     inifilename := ChangeFileExt(ExtractFileName(Application.ExeName), INI_EXT);
     exefolder := ExtractFilePath(Application.ExeName);
-
-    //MessageDlg(Application.ExeName, mtWarning, [mbYes, mbNo], 0);
-    //MessageDlg(exefolder, mtWarning, [mbYes, mbNo], 0);
 
     // Did someone pass the -c command to us?
     if (ParamCount >= 2) and SameStr(ParamStr(1), '-c') then begin
@@ -121,9 +112,9 @@ begin
             CreateDir(ParamStr(2));
 
         if ParamStr(2)[2] <> ':' then // if a relative path is specified...
-            devData.INIFile := exefolder + IncludeTrailingBackslash(ParamStr(2)) + inifilename
+            devData.INIFileName := exefolder + IncludeTrailingBackslash(ParamStr(2)) + inifilename
         else
-            devData.INIFile := IncludeTrailingBackslash(ParamStr(2)) + inifilename;
+            devData.INIFileName := IncludeTrailingBackslash(ParamStr(2)) + inifilename;
 
         ConfigMode := CFG_PARAM;
     end else begin
@@ -133,13 +124,13 @@ begin
         if SUCCEEDED(SHGetFolderPath(0, CSIDL_APPDATA, 0, 0, tempc)) then
             appdata := IncludeTrailingBackslash(AnsiString(tempc));
 
-        if (appdata <> '') and (DirectoryExists(appdata + 'SmartCpp') or CreateDir(appdata + 'SmartCpp')) then begin
-            devData.INIFile := appdata + 'SmartCpp\' + inifilename;
+        if (appdata <> '') and (DirectoryExists(appdata + 'SmartCpp') or CreateDir(appdata + 'Dev-Cpp')) then begin
+            devData.INIFileName := appdata + 'SmartCpp\' + inifilename;
             ConfigMode := CFG_APPDATA;
         end else begin
 
             // store it in the default portable config folder anyways...
-            devData.INIFile := exefolder + 'config\' + inifilename;
+            devData.INIFileName := exefolder + 'config\' + inifilename;
             ConfigMode := CFG_EXEFOLDER;
         end;
     end;
@@ -151,14 +142,14 @@ begin
 
     // support for user-defined alternate ini file (permanent, but overriden by command-line -c)
     if ConfigMode <> CFG_PARAM then begin
-        StandardConfigFile := devData.INIFile;
-        CheckForAltConfigFile(devData.INIFile);
+        StandardConfigFile := devData.INIFileName;
+        CheckForAltConfigFile(devData.INIFileName);
         if UseAltConfigFile and (AltConfigFile <> '') and FileExists(AltConfigFile) then
-            devData.INIFile := AltConfigFile;
+            devData.INIFileName := AltConfigFile;
     end;
 
     // Create and fill settings structures
-    devData.ReadConfigData; // fill devData
+    devData.ReadSelf;
     InitializeOptions;
 
     // Display it as soon as possible, and only if its worth viewing...
@@ -168,6 +159,7 @@ begin
     Application.Initialize;
     Application.Title := 'Smart-C++';
     Application.CreateForm(TMainForm, MainForm);
+
     if Assigned(SplashForm) then
         SplashForm.Close;
 
