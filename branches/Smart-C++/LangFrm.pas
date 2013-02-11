@@ -308,7 +308,7 @@ begin
     EditorBox.Items.Add('Visual Studio');
     EditorBox.ItemIndex := 1;
 
-    ThemeImage.Picture.Bitmap.LoadFromResourceName(HInstance, 'NEWLOOKCLASSICPLUS');
+    ThemeImage.Picture.Bitmap.LoadFromResourceName(HInstance, 'NIGHT');
 end;
 
 procedure TLangForm.FormClose(Sender: TObject; var Action: TCloseAction);

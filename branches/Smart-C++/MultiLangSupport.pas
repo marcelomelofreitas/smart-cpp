@@ -115,6 +115,9 @@ begin
     fDefaultLang := TStringList.Create;
     ms := TMemoryStream.Create;
     try
+        { TODO 1 -oSXKDZ -cSmart-C++升级问题 : 
+这里删除了Chinese.lng效果待观察。
+我做了什么：我将默认的English.lng更改为Chinese.lng和tip }
         LoadFilefromResource('English.lng', ms);
         fStrings.LoadFromStream(ms);
         ms.Seek(0, soFromBeginning);
@@ -203,7 +206,7 @@ begin
             for idx := 0 to pred(fLangList.Count) do begin
                 tmp.LoadFromFile(fLangList[idx]);
                 s := tmp.Values['Lang'];
-                if SameText(ExtractFileName(fLangList[idx]), 'English.lng') and (devData.Language = '') then
+                if SameText(ExtractFileName(fLangList[idx]), 'Chinese.lng') and (devData.Language = '') then
                     fCurLang := s;
                 if s = '' then
                     fLangList[idx] := format('%s=%s', [fLangList[idx], ChangeFileExt(ExtractFileName(fLangList[idx]), '')])
@@ -247,13 +250,13 @@ begin
                     Open(fLangList.Names[Selected]);
                     devData.Language := FileFromDescription(fLangList.Names[Selected]);
                 end else begin
-                    Open('English.lng');
+                    Open('Chinese.lng');
                 end;
         finally
             Free;
             fSelect := FALSE;
         end else begin
-        Open('English.lng');
+        Open('Chinese.lng');
         fSelect := FALSE;
     end;
 end;

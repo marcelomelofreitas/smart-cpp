@@ -1,6 +1,6 @@
 object MainForm: TMainForm
-  Left = 234
-  Top = 149
+  Left = 367
+  Top = 183
   HorzScrollBar.Visible = False
   VertScrollBar.Visible = False
   AutoScroll = False
@@ -785,6 +785,7 @@ object MainForm: TMainForm
       EdgeOuter = esNone
       Flat = True
       HotImages = dmMain.MenuImages_NewLook
+      Images = dmMain.MenuImages_NewLook
       ParentShowHint = False
       ShowHint = True
       TabOrder = 5
@@ -794,19 +795,16 @@ object MainForm: TMainForm
         Left = 0
         Top = 0
         Action = actInsert
-        ImageIndex = 1
       end
       object ToggleBtn: TToolButton
         Left = 23
         Top = 0
         Action = actToggle
-        ImageIndex = 2
       end
       object GotoBtn: TToolButton
         Left = 46
         Top = 0
         Action = actGoto
-        ImageIndex = 3
       end
     end
     object tbClasses: TToolBar
@@ -1020,16 +1018,13 @@ object MainForm: TMainForm
         ItemImages.VariablePrivate = 2
         ItemImages.VariableProtected = 3
         ItemImages.VariablePublic = 4
-        ItemImages.VariablePublished = 4
         ItemImages.MethodPrivate = 5
         ItemImages.MethodProtected = 6
         ItemImages.MethodPublic = 7
-        ItemImages.MethodPublished = 7
         ItemImages.InheritedMethodProtected = 8
         ItemImages.InheritedMethodPublic = 10
         ItemImages.InheritedVariableProtected = 9
         ItemImages.InheritedVariablePublic = 11
-        UseColors = True
         ShowInheritedMembers = False
       end
     end
@@ -2926,21 +2921,21 @@ object MainForm: TMainForm
     end
     object actInsert: TAction
       Category = 'Edit'
-      Caption = 'Insert'
+      Caption = #25554#20837#24120#29992#20195#30721
       ImageIndex = 18
       OnExecute = actInsertExecute
       OnUpdate = actUpdatePageCount
     end
     object actToggle: TAction
       Category = 'Edit'
-      Caption = 'Toggle Bookmarks'
+      Caption = #35774#32622#20070#31614
       ImageIndex = 19
       OnExecute = actToggleExecute
       OnUpdate = actUpdatePageCount
     end
     object actGoto: TAction
       Category = 'Edit'
-      Caption = 'Goto Bookmark'
+      Caption = #36716#21040#20070#31614
       ImageIndex = 20
       OnUpdate = actUpdatePageCount
     end
@@ -3044,6 +3039,7 @@ object MainForm: TMainForm
     Top = 103
   end
   object CppParser: TCppParser
+    BaseIndex = 0
     Enabled = True
     OnTotalProgress = CppParserTotalProgress
     Tokenizer = CppTokenizer
@@ -3056,6 +3052,7 @@ object MainForm: TMainForm
     Top = 103
   end
   object CodeCompletion: TCodeCompletion
+    ShowCount = 100
     Parser = CppParser
     Color = clWhite
     Width = 320

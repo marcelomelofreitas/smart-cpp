@@ -126,7 +126,7 @@ begin
     Delete(LangNoExt, ExtPos, MaxInt);
     S := devDirs.Lang + ExtractFileName(LangNoExt) + '.tips';
     if not FileExists(S) then
-        S := devDirs.Lang + 'English.tips';
+        S := devDirs.Lang + 'Chinese.tips';
     if not FileExists(S) then begin
         btnNext.Enabled := False;
         btnPrev.Enabled := False;

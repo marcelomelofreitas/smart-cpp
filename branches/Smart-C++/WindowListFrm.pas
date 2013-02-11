@@ -54,13 +54,7 @@ type
 implementation
 
 uses
-    {$IFDEF WIN32}
-    MultiLangSupport, devcfg;
-{$ENDIF}
-{$IFDEF LINUX}
-Xlib, MultiLangSupport, devcfg;
-{$ENDIF}
-
+    devcfg;
 {$R *.dfm}
 
 procedure TWindowListForm.FormCreate(Sender: TObject);
@@ -68,10 +62,6 @@ begin
     // Set interface font
     Font.Name := devData.InterfaceFont;
     Font.Size := devData.InterfaceFontSize;
-
-    Caption := Lang[ID_WL];
-    OkBtn.Caption := Lang[ID_BTN_OK];
-    CancelBtn.Caption := Lang[ID_BTN_CANCEL];
 end;
 
 procedure TWindowListForm.UnitListDblClick(Sender: TObject);

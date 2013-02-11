@@ -124,7 +124,7 @@ begin
         if SUCCEEDED(SHGetFolderPath(0, CSIDL_APPDATA, 0, 0, tempc)) then
             appdata := IncludeTrailingBackslash(AnsiString(tempc));
 
-        if (appdata <> '') and (DirectoryExists(appdata + 'SmartCpp') or CreateDir(appdata + 'Dev-Cpp')) then begin
+        if (appdata <> '') and (DirectoryExists(appdata + 'SmartCpp') or CreateDir(appdata + 'SmartCpp')) then begin
             devData.INIFileName := appdata + 'SmartCpp\' + inifilename;
             ConfigMode := CFG_APPDATA;
         end else begin

@@ -144,7 +144,6 @@ type
         lblLogOutput: TLabel;
         btnLogOutputDir: TSpeedButton;
         chkLogOutput: TCheckBox;
-        lblOverrideOutput: TLabel;
         OptionsTip: TLabel;
         OptionsLink: TLabel;
         chkDefCpp: TCheckBox;
