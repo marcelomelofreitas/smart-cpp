@@ -23,16 +23,9 @@ unit EnviroFrm;
 interface
 
 uses
-    {$IFDEF WIN32}
     Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
     Dialogs, StdCtrls, Spin, ExtCtrls, ExtDlgs, Buttons,
     CheckLst, Grids, ValEdit, ComCtrls;
-{$ENDIF}
-{$IFDEF LINUX}
-SysUtils, Variants, Classes, QGraphics, QControls, QForms,
-QDialogs, QStdCtrls, QComCtrls, QExtCtrls, QButtons,
-QCheckLst, QGrids;
-{$ENDIF}
 
 type
     TEnviroForm = class(TForm)

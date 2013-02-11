@@ -373,7 +373,7 @@ begin
     Font.Size := devData.InterfaceFontSize;
 
     SaveInterval.Caption := '间隔: ' + IntToStr(MinutesDelay.Position) + ' 分钟';
-    lblCompletionDelay.Caption := '延时: ' + IntToStr(tbCompletionDelay.Position) + ' 毫秒';
+    lblCompletionDelay.Caption := '间隔: ' + IntToStr(tbCompletionDelay.Position) + ' 毫秒';
 
 
     tbCompletionDelayChange(nil);
@@ -386,13 +386,13 @@ begin
     CppEdit.Lines.BeginUpdate;
     with cppEdit.Lines do begin
         Add('#include <iostream>');
-        Add('#include <conio.h>');
+        Add('using namespace std;');
         Add('');
-        Add('int main(int argc, char **argv)');
+        Add('int main(int argc, char *argv[])');
         Add('{');
         Add('	int numbers[20];');
         Add('	float average, total; //breakpoint');
-        Add('	for (int i = 0; i <= 19; i++)');
+        Add('	for (int i = 0; i <= 19; ++ i)');
         Add('	{ // active breakpoint');
         Add('		numbers[i] = i;');
         Add('		Total += i; // error line');
@@ -400,7 +400,7 @@ begin
         Add('	average = total / 20;');
         Add('	cout << numbers[0] << "\n" << numbers[19] << "\n";');
         Add('	cout << "total: " << total << "\nAverage: " << average;');
-        Add('	getch();');
+        Add('	return 0;');
         Add('}');
     end;
     CppEdit.Lines.EndUpdate;
@@ -1562,15 +1562,15 @@ procedure TEditorOptForm.NameOptionsClick(Sender: TObject);
 begin
     case NameOptions.ItemIndex of
         0: begin
-                lblTimeStampExample.Caption := Format(Lang[ID_EOPT_AUTOSAVEEXAMPLE],
+                lblTimeStampExample.Caption := Format('样例文件名: %s',
                     ['main.cpp']);
             end;
         1: begin
-                lblTimeStampExample.Caption := Format(Lang[ID_EOPT_AUTOSAVEEXAMPLE],
+                lblTimeStampExample.Caption := Format('样例文件名: %s',
                     [ChangeFileExt('main.cpp', '.' + IntToStr(DateTimeToUnix(Now)) + ExtractFileExt('main.cpp'))]);
             end;
         2: begin
-                lblTimeStampExample.Caption := Format(Lang[ID_EOPT_AUTOSAVEEXAMPLE],
+                lblTimeStampExample.Caption := Format('样例文件名: %s',
                     [ChangeFileExt('main.cpp', '.' + FormatDateTime('yyyy mm dd hh mm ss', Now) + ExtractFileExt('main.cpp'))]);
             end;
     end;

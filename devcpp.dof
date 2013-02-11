@@ -115,7 +115,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=1
 Release=0
-Build=35
+Build=39
 Debug=0
 PreRelease=0
 Special=0
@@ -126,7 +126,7 @@ CodePage=936
 [Version Info Keys]
 CompanyName=SXKDZ Corporation
 FileDescription=Smart-C++ IDE
-FileVersion=1.1.0.35
+FileVersion=1.1.0.39
 InternalName=smartcpp.exe
 LegalCopyright=版权所有 (c) 2013 SXKDZ Corporation。保留所有权利。
 LegalTrademarks=

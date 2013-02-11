@@ -1379,10 +1379,10 @@ begin
             if (localcopy[CurPos] in [#13, #10]) then begin
                 repeat
                     Inc(CurPos);
-                until (CurPos = len) or not (localcopy[CurPos] in [#13, #10]);
+                until (CurPos = len + 1) or not (localcopy[CurPos] in [#13, #10]);
 
                 // and comment only when this enter isn't trailing
-                if CurPos < len then begin
+                if (CurPos <= len) then begin
                     Inc(len, 2);
                     Insert('//', localcopy, CurPos); // 1 based
                 end;
@@ -1534,7 +1534,7 @@ begin
             // reset the cursor
             fText.Cursor := crIBeam;
 
-            line := fText.Lines[p.Row - 1];
+            line := Trim(fText.Lines[p.Row - 1]);
             if StartsStr('#include', line) then begin
 
                 // We've clicked an #include...

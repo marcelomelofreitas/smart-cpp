@@ -815,7 +815,7 @@ procedure TdevData.SettoDefaults;
 
 begin
     fFirst := TRUE;
-    fLang := 'English.lng';
+    fLang := 'Chinese.lng';
     fFindCols := '75, 75, 120, 150';
     fCompCols := '75, 75, 120, 150';
     fMsgTabs := 0; // Top
@@ -863,8 +863,11 @@ begin
         fInterfaceFontSize := 9;
         fInterfaceFont := 'Segoe UI';
     end else begin
-        fInterfaceFontSize := 8;
-        fInterfaceFont := 'MS Sans Serif';
+        { TODO 1 -oSXKDZ -c升级 : 这里也是一个升级问题，UI字体设置，解决备用 }
+        // fInterfaceFontSize := 8;
+        // fInterfaceFont := 'MS Sans Serif';
+        fInterfaceFontSize := 9;
+        fInterfaceFont := '宋体';
     end;
 
     //read associations set by installer as defaults
@@ -1231,6 +1234,8 @@ var
     sl: TStringList;
 begin
 
+    { TODO 5 -oSXKDZ -c汉化 : 在这里抓到了编译命令（Compile Options窗口） }
+
     // C options
     AddOption(ID_COPT_ANSIC, ID_COPT_GRP_C, True, True, False, 0, '-ansi', nil);
     AddOption(ID_COPT_NOASM, ID_COPT_GRP_C, True, True, False, 0, '-fno-asm', nil);
@@ -1535,7 +1540,9 @@ begin
     //which should be treated as cpp header files
     fSynExt := 'c;cpp;h;hpp;cc;cxx;cp;hp;rh;fx;inl;tcc;;';
     fHighCurrLine := TRUE;
-    fHighColor := $FFFFCC; // Light Turquoise
+    { TODO 1 -oSXKDZ -c升级 : 这里改了高亮颜色，也是备查 }
+    // fHighColor := $FFFFCC; // Light Turquoise
+    fHighColor := 3355443;
     fTabSize := 4;
 
     // Display

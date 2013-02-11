@@ -1338,7 +1338,7 @@ var
 begin
     e := GetEditor;
     if Assigned(e) then begin
-        Statusbar.Panels[0].Text := format('行: %6d               列: %6d               选中: %6d               行数: %6d               文件长度: %6d', [e.Text.LineToUncollapsedLine(e.Text.DisplayY),
+        Statusbar.Panels[0].Text := format('行: %d        列: %d        选中: %d        行数: %d        文件长度: %d', [e.Text.LineToUncollapsedLine(e.Text.DisplayY),
             e.Text.DisplayX,
                 e.Text.SelLength,
                 e.Text.UnCollapsedLines.Count,
@@ -3558,7 +3558,7 @@ end;
 procedure TMainForm.UpdateSplash(const text: AnsiString);
 begin
     if Assigned(SplashForm) then
-        SplashForm.Statusbar.SimpleText := 'Bloodshed Dev-C++ 4.9.9.2 (Orwell update ' + DEVCPP_VERSION + ') ' + text;
+        SplashForm.Statusbar.SimpleText := 'Smart-C++ ' + DEVCPP_VERSION + ' ' + text;
 end;
 
 procedure TMainForm.InitClassBrowser(ReloadCache: boolean);
@@ -3665,9 +3665,9 @@ begin
     passedtime := (GetTickCount - starttime);
 
     if passedtime > 5000 then // 5 sec
-        SetStatusbarMessage(Format(Lang[ID_DONEPARSINGIN], [passedtime / 1000]) + ', ' + Lang[ID_DONEPARSINGHINT])
+        SetStatusbarMessage(Format('语法分析完成于 %g 秒', [passedtime / 1000]) + ', ' + '建议在［工具］菜单中的编辑器选项下“代码完成”选项卡中开启缓存以提高语法分析速度')
     else
-        SetStatusbarMessage(Format(Lang[ID_DONEPARSINGIN], [passedtime / 1000])); // divide later to preserve comma stuff
+        SetStatusbarMessage(Format('语法分析完成于 %g 秒', [passedtime / 1000])); // divide later to preserve comma stuff
 end;
 
 procedure TMainForm.ClassBrowserSelect(Sender: TObject; Filename: TFileName; Line: Integer);
@@ -3685,7 +3685,7 @@ begin
     if FileName <> '' then
         SetStatusBarMessage('Parsing ' + Filename)
     else
-        SetStatusBarMessage(Lang[ID_DONEPARSING]);
+        SetStatusBarMessage('语法分析完成');
     Statusbar.Repaint;
 end;
 
@@ -4609,7 +4609,7 @@ begin
     RebuildClassesToolbar;
 
     // do this work only if this was the last file scanned
-    SetStatusBarMessage(Lang[ID_DONEPARSING]);
+    SetStatusBarMessage('语法分析完成');
 end;
 
 procedure TMainForm.UpdateAppTitle;
@@ -5729,7 +5729,7 @@ begin
     fFirstActivate := true;
 
     // Create all data structures
-    UpdateSplash('Applying settings...');
+    UpdateSplash('正在应用设置...');
 
     // Backup PATH variable
     devDirs.OriginalPath := GetEnvironmentVariable('PATH');
@@ -5854,7 +5854,7 @@ begin
     SetupProjectView;
 
     // Initialize class browser (takes much longer than all the other stuff above)
-    UpdateSplash('Initializing class browser...');
+    UpdateSplash('正在初始化类浏览器...');
 
     InitClassBrowser(true);
 end;
